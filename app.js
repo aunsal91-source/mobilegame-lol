@@ -370,16 +370,6 @@
     });
   }
 
-  function sparklineSvg(daily) {
-    if (!daily || daily.length < 2) return "";
-    const values = daily.map((d) => d.clicks);
-    if (!values.some((v) => v > 0)) return ""; // no activity yet — a flat line is just noise
-    const max = Math.max(1, ...values);
-    const w = 72, h = 24, step = w / (values.length - 1);
-    const points = values.map((v, i) => `${(i * step).toFixed(1)},${(h - (v / max) * (h - 3) - 1.5).toFixed(1)}`).join(" ");
-    return `<svg class="sparkline" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${points}" fill="none" stroke="var(--live)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  }
-
   function listingCard(l, rank) {
     const li = document.createElement("li");
     li.className = "listing-card" + (rank <= 3 ? ` rank-${rank}` : "");
@@ -394,7 +384,6 @@
           <span class="badge">${escapeHtml(l.category)}</span>
           <span>${timeAgo(l.claimedAt)}</span>
           ${l.clicks > 0 ? `<span class="meta-dot">•</span><span>${l.clicks.toLocaleString("en-US")} clicks</span>` : ""}
-          ${sparklineSvg(l.dailyClicks)}
         </div>
       </div>
       <div class="listing-side">
