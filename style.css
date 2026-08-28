@@ -428,7 +428,7 @@ a { color: inherit; text-decoration: none; }
   .tabs { padding: 3px; gap: 0; }
   .tab { padding: 6px 8px; font-size: 11px; gap: 3px; }
   .tab-icon { width: 11px; height: 11px; }
-  .theme-toggle { flex-shrink: 0; width: 30px; height: 30px; }
+  .theme-toggle { flex-shrink: 0; width: 30px; height: 30px; margin-left: auto; }
 
   .more-toggle { display: block; }
   .more-details { display: none; }
