@@ -246,27 +246,39 @@ def slug(url):
 
 
 SEED_LISTINGS = [
-    {"url": "https://subwaysurfers.com", "title": "Subway Surfers", "desc": "Charted for: turning every commute into a dodge-the-inspector sprint.", "category": "Arcade", "amount": 5, "clicks": 88, "hoursAgo": 40},
-    {"url": "https://king.com", "title": "Candy Crush Saga", "desc": "Charted for: making one more level a permanent lie.", "category": "Puzzle", "amount": 5, "clicks": 66, "hoursAgo": 60},
-    {"url": "https://clashroyale.com", "title": "Clash Royale", "desc": "Charted for: 3-minute matches that somehow eat 3 hours.", "category": "Strategy", "amount": 6, "clicks": 61, "hoursAgo": 20},
-    {"url": "https://brawlstars.com", "title": "Brawl Stars", "desc": "Charted for: turning the group chat into a raid squad.", "category": "Action", "amount": 5, "clicks": 54, "hoursAgo": 80},
-    {"url": "https://innersloth.com", "title": "Among Us", "desc": "Charted for: ruining friendships one emergency meeting at a time.", "category": "Casual", "amount": 5, "clicks": 47, "hoursAgo": 30},
-    {"url": "https://genshin.hoyoverse.com", "title": "Genshin Impact", "desc": "Charted for: a battery-draining open world you can't put down.", "category": "Role Playing", "amount": 6, "clicks": 78, "hoursAgo": 12},
-    {"url": "https://roblox.com", "title": "Roblox", "desc": "Charted for: being ten thousand different games in one app.", "category": "Simulation", "amount": 7, "clicks": 92, "hoursAgo": 5},
-    {"url": "https://minecraft.net", "title": "Minecraft", "desc": "Charted for: still not letting go after all these years.", "category": "Adventure", "amount": 6, "clicks": 85, "hoursAgo": 3},
-    {"url": "https://callofduty.com/mobile", "title": "Call of Duty: Mobile", "desc": "Charted for: console-grade firefights in your pocket.", "category": "Battle Royale", "amount": 5, "clicks": 39, "hoursAgo": 11},
-    {"url": "https://pubgmobile.com", "title": "PUBG Mobile", "desc": "Charted for: making 100-player drop-ins feel routine.", "category": "Battle Royale", "amount": 5, "clicks": 44, "hoursAgo": 22},
-    {"url": "https://stumbleguys.com", "title": "Stumble Guys", "desc": "Charted for: chaos physics that end every friendship gently.", "category": "Casual", "amount": 5, "clicks": 28, "hoursAgo": 14},
-    {"url": "https://dreamgames.com", "title": "Royal Match", "desc": "Charted for: a talking king with an unreasonable renovation budget.", "category": "Puzzle", "amount": 6, "clicks": 58, "hoursAgo": 10},
-    {"url": "https://scopely.com", "title": "Monopoly GO!", "desc": "Charted for: turning a board game into a slot machine, somehow.", "category": "Card & Casino", "amount": 5, "clicks": 71, "hoursAgo": 26},
-    {"url": "https://moonactive.com", "title": "Coin Master", "desc": "Charted for: spinning a slot wheel to raid your friends' villages.", "category": "Card & Casino", "amount": 5, "clicks": 33, "hoursAgo": 45},
-    {"url": "https://township.com", "title": "Township", "desc": "Charted for: farming, building, and mildly neglecting real life.", "category": "Simulation", "amount": 5, "clicks": 19, "hoursAgo": 18},
-    {"url": "https://gameloft.com", "title": "Asphalt 9: Legends", "desc": "Charted for: physics-defying drifts that make traffic jams look tame.", "category": "Racing", "amount": 5, "clicks": 24, "hoursAgo": 55},
-    {"url": "https://tocaboca.com", "title": "Toca Life World", "desc": "Charted for: letting kids run entire cities with zero rules.", "category": "Simulation", "amount": 5, "clicks": 22, "hoursAgo": 33},
-    {"url": "https://robtopgames.com", "title": "Geometry Dash", "desc": "Charted for: one-tap deaths that somehow keep you smiling.", "category": "Arcade", "amount": 5, "clicks": 15, "hoursAgo": 9},
-    {"url": "https://poncle.co", "title": "Vampire Survivors", "desc": "Charted for: a screen full of chaos and one very tired arm.", "category": "Indie & Other", "amount": 6, "clicks": 49, "hoursAgo": 15},
-    {"url": "https://lilithgames.com", "title": "AFK Arena", "desc": "Charted for: getting stronger while you're not even playing.", "category": "Idle & Clicker", "amount": 5, "clicks": 26, "hoursAgo": 7},
-    {"url": "https://miniclip.com", "title": "8 Ball Pool", "desc": "Charted for: trash-talking strangers over a very small table.", "category": "Sports", "amount": 5, "clicks": 18, "hoursAgo": 50},
+    {"url": "https://subwaysurfers.com", "title": "Subway Surfers", "desc": "turning every commute into a dodge-the-inspector sprint.", "category": "Arcade", "amount": 5, "clicks": 88, "hoursAgo": 40},
+    {"url": "https://king.com", "title": "Candy Crush Saga", "desc": "making one more level a permanent lie.", "category": "Puzzle", "amount": 5, "clicks": 66, "hoursAgo": 60},
+    {"url": "https://clashroyale.com", "title": "Clash Royale", "desc": "3-minute matches that somehow eat 3 hours.", "category": "Strategy", "amount": 6, "clicks": 61, "hoursAgo": 20},
+    {"url": "https://brawlstars.com", "title": "Brawl Stars", "desc": "turning the group chat into a raid squad.", "category": "Action", "amount": 5, "clicks": 54, "hoursAgo": 80},
+    {"url": "https://innersloth.com", "title": "Among Us", "desc": "ruining friendships one emergency meeting at a time.", "category": "Casual", "amount": 5, "clicks": 47, "hoursAgo": 30},
+    {"url": "https://genshin.hoyoverse.com", "title": "Genshin Impact", "desc": "a battery-draining open world you can't put down.", "category": "Role Playing", "amount": 6, "clicks": 78, "hoursAgo": 12},
+    {"url": "https://roblox.com", "title": "Roblox", "desc": "being ten thousand different games in one app.", "category": "Simulation", "amount": 7, "clicks": 92, "hoursAgo": 5},
+    {"url": "https://minecraft.net", "title": "Minecraft", "desc": "still not letting go after all these years.", "category": "Adventure", "amount": 6, "clicks": 85, "hoursAgo": 3},
+    {"url": "https://callofduty.com/mobile", "title": "Call of Duty: Mobile", "desc": "console-grade firefights in your pocket.", "category": "Battle Royale", "amount": 5, "clicks": 39, "hoursAgo": 11},
+    {"url": "https://pubgmobile.com", "title": "PUBG Mobile", "desc": "making 100-player drop-ins feel routine.", "category": "Battle Royale", "amount": 5, "clicks": 44, "hoursAgo": 22},
+    {"url": "https://stumbleguys.com", "title": "Stumble Guys", "desc": "chaos physics that end every friendship gently.", "category": "Casual", "amount": 5, "clicks": 28, "hoursAgo": 14},
+    {"url": "https://dreamgames.com", "title": "Royal Match", "desc": "a talking king with an unreasonable renovation budget.", "category": "Puzzle", "amount": 6, "clicks": 58, "hoursAgo": 10},
+    {"url": "https://scopely.com", "title": "Monopoly GO!", "desc": "turning a board game into a slot machine, somehow.", "category": "Card & Casino", "amount": 5, "clicks": 71, "hoursAgo": 26},
+    {"url": "https://moonactive.com", "title": "Coin Master", "desc": "spinning a slot wheel to raid your friends' villages.", "category": "Card & Casino", "amount": 5, "clicks": 33, "hoursAgo": 45},
+    {"url": "https://township.com", "title": "Township", "desc": "farming, building, and mildly neglecting real life.", "category": "Simulation", "amount": 5, "clicks": 19, "hoursAgo": 18},
+    {"url": "https://gameloft.com", "title": "Asphalt 9: Legends", "desc": "physics-defying drifts that make traffic jams look tame.", "category": "Racing", "amount": 5, "clicks": 24, "hoursAgo": 55},
+    {"url": "https://tocaboca.com", "title": "Toca Life World", "desc": "letting kids run entire cities with zero rules.", "category": "Simulation", "amount": 5, "clicks": 22, "hoursAgo": 33},
+    {"url": "https://robtopgames.com", "title": "Geometry Dash", "desc": "one-tap deaths that somehow keep you smiling.", "category": "Arcade", "amount": 5, "clicks": 15, "hoursAgo": 9},
+    {"url": "https://poncle.co", "title": "Vampire Survivors", "desc": "a screen full of chaos and one very tired arm.", "category": "Indie & Other", "amount": 6, "clicks": 49, "hoursAgo": 15},
+    {"url": "https://lilithgames.com", "title": "AFK Arena", "desc": "getting stronger while you're not even playing.", "category": "Idle & Clicker", "amount": 5, "clicks": 26, "hoursAgo": 7},
+    {"url": "https://miniclip.com", "title": "8 Ball Pool", "desc": "trash-talking strangers over a very small table.", "category": "Sports", "amount": 5, "clicks": 18, "hoursAgo": 50},
+    {"url": "https://habby.com", "title": "Archero", "desc": "turning tap-to-shoot into a genuine addiction.", "category": "Action", "amount": 5, "clicks": 41, "hoursAgo": 6, "appStoreUrl": "https://apps.apple.com/us/app/archero/id1453651052?uo=4"},
+    {"url": "https://habby.com", "title": "Survivor.io", "desc": "outrunning a screen full of monsters, barely.", "category": "Action", "amount": 5, "clicks": 35, "hoursAgo": 60, "appStoreUrl": "https://apps.apple.com/us/app/survivor-io/id1528941310?uo=4"},
+    {"url": "https://superplay.com", "title": "Dice Dreams", "desc": "turning a dice roll into a friendship-ending raid.", "category": "Card & Casino", "amount": 5, "clicks": 52, "hoursAgo": 29, "appStoreUrl": "https://apps.apple.com/us/app/dice-dreams/id1484468651?uo=4"},
+    {"url": "https://metacoregames.com", "title": "Merge Mansion", "desc": "a grandma with more secrets than furniture.", "category": "Casual", "amount": 5, "clicks": 44, "hoursAgo": 17, "appStoreUrl": "https://apps.apple.com/us/app/merge-mansion-puzzles-story/id1484442152?uo=4"},
+    {"url": "https://www.marvelsnap.com", "title": "Marvel Snap", "desc": "six-card decks that end in three-minute heartbreaks.", "category": "Card & Casino", "amount": 5, "clicks": 67, "hoursAgo": 3, "appStoreUrl": "https://apps.apple.com/us/app/marvel-snap-hero-card-game/id1592081003?uo=4"},
+    {"url": "https://www.playbalatro.com", "title": "Balatro", "desc": "turning poker hands into a joker-fueled fever dream.", "category": "Card & Casino", "amount": 5, "clicks": 91, "hoursAgo": 8, "appStoreUrl": "https://apps.apple.com/us/app/balatro/id6502453075?uo=4"},
+    {"url": "https://dead-cells.com", "title": "Dead Cells", "desc": "dying beautifully, over and over again.", "category": "Action", "amount": 5, "clicks": 38, "hoursAgo": 45, "appStoreUrl": "https://apps.apple.com/us/app/dead-cells/id1389752090?uo=4"},
+    {"url": "https://devolverdigital.com", "title": "Loop Hero", "desc": "building a world just to loop through its doom.", "category": "Strategy", "amount": 5, "clicks": 20, "hoursAgo": 65, "appStoreUrl": "https://apps.apple.com/us/app/loop-hero/id6464048549?uo=4"},
+    {"url": "https://www.stardewvalley.net", "title": "Stardew Valley", "desc": "quitting your corporate job, virtually.", "category": "Simulation", "amount": 5, "clicks": 73, "hoursAgo": 24, "appStoreUrl": "https://apps.apple.com/us/app/stardew-valley/id1406710800?uo=4"},
+    {"url": "https://dinopolo.club", "title": "Mini Metro", "desc": "making subway planning weirdly stressful.", "category": "Strategy", "amount": 5, "clicks": 29, "hoursAgo": 52, "appStoreUrl": "https://apps.apple.com/us/app/mini-metro/id837860959?uo=4"},
+    {"url": "https://voodoo.io", "title": "Going Balls", "desc": "a rolling ball that judges your reflexes harshly.", "category": "Arcade", "amount": 5, "clicks": 56, "hoursAgo": 12, "appStoreUrl": "https://apps.apple.com/us/app/going-balls/id1499081620?uo=4"},
+    {"url": "https://peoplefun.com", "title": "Wordscapes", "desc": "turning a coffee break into forty-five minutes.", "category": "Puzzle", "amount": 5, "clicks": 47, "hoursAgo": 38, "appStoreUrl": "https://apps.apple.com/us/app/wordscapes-word-game/id1207472156?uo=4"},
 ]
 
 
@@ -311,19 +323,20 @@ def init_db():
                     value TEXT NOT NULL
                 );
             """)
-            cur.execute("SELECT COUNT(*) FROM listings;")
-            (count,) = cur.fetchone()
-            if count == 0:
-                now_ms = int(time.time() * 1000)
-                for i, s in enumerate(SEED_LISTINGS):
-                    claimed_at = now_ms - s["hoursAgo"] * 3600 * 1000
-                    cur.execute(
-                        """INSERT INTO listings (id, url, title, description, category, amount, clicks, claimed_at, logo)
-                           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                           ON CONFLICT (id) DO NOTHING;""",
-                        (f"seed-{i}", s["url"], s["title"], s["desc"], s["category"], s["amount"],
-                         s["clicks"], claimed_at, favicon_for(slug(s["url"]))),
-                    )
+            now_ms = int(time.time() * 1000)
+            for i, s in enumerate(SEED_LISTINGS):
+                claimed_at = now_ms - s["hoursAgo"] * 3600 * 1000
+                cur.execute(
+                    """INSERT INTO listings (id, url, title, description, category, amount, clicks, claimed_at, logo, app_store_url)
+                       VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                       ON CONFLICT (id) DO NOTHING;""",
+                    (f"seed-{i}", s["url"], s["title"], s["desc"], s["category"], s["amount"],
+                     s["clicks"], claimed_at, favicon_for(slug(s["url"])), s.get("appStoreUrl", "")),
+                )
+                cur.execute(
+                    "UPDATE listings SET description = %s WHERE id = %s;",
+                    (s["desc"], f"seed-{i}"),
+                )
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS heartbeats (
                     session_id TEXT PRIMARY KEY,
@@ -351,7 +364,7 @@ def init_db():
 
 ONLINE_WINDOW_MS = 45 * 1000
 ONLINE_PADDING = 19
-VISITOR_PADDING = 12000
+VISITOR_PADDING = 3437
 
 
 def record_heartbeat(session_id, user_agent="", referrer=""):
@@ -700,7 +713,7 @@ def api_resolve():
 
 @app.post("/api/click/<listing_id>")
 def api_click(listing_id):
-    listing_id = listing_id[:64]
+    listing_id = listing_id[:255]
     try:
         record_click(listing_id)
     except Exception:
