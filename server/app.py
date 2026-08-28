@@ -677,6 +677,29 @@ def api_resolve():
     return jsonify(data)
 
 
+@app.post("/api/admin/one-time-fix")
+def api_admin_one_time_fix():
+    """Temporary, single-use maintenance endpoint: removes the manual test
+    listing and re-prices the current board (ranks 1-7 step down from $12 to
+    $6, ranks 8+ flat at $5). Meant to be called once by hand, then deleted
+    from the codebase."""
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM listings WHERE title = 'Test Game';")
+            cur.execute("DELETE FROM listing_clicks_daily WHERE listing_id NOT IN (SELECT id FROM listings);")
+        conn.commit()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("SELECT id, title, amount FROM listings ORDER BY amount DESC, claimed_at ASC;")
+            rows = cur.fetchall()
+        with conn.cursor() as cur:
+            for i, row in enumerate(rows):
+                rank = i + 1
+                new_amount = max(5, 12 - (rank - 1)) if rank <= 7 else 5
+                cur.execute("UPDATE listings SET amount = %s WHERE id = %s;", (new_amount, row["id"]))
+        conn.commit()
+    return jsonify({"reordered": [{"title": r["title"], "rank": i + 1} for i, r in enumerate(rows)]})
+
+
 @app.post("/api/click/<listing_id>")
 def api_click(listing_id):
     listing_id = listing_id[:64]
