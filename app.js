@@ -404,7 +404,7 @@
         <div class="listing-meta">
           <span class="badge">${escapeHtml(l.category)}</span>
           <span>${timeAgo(l.claimedAt)}</span>
-          ${l.clicks > 0 ? `<span>${l.clicks.toLocaleString("en-US")} clicks</span>` : ""}
+          ${l.clicks > 0 ? `<span class="meta-dot">•</span><span>${l.clicks.toLocaleString("en-US")} clicks</span>` : ""}
           ${sparklineSvg(l.dailyClicks)}
           ${storeButtons(l)}
         </div>
