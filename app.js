@@ -378,10 +378,12 @@
       <div class="rank-num">#${rank}</div>
       ${l.preview ? `<div class="listing-preview"><img class="preview-thumb" src="${l.preview}" alt="" loading="lazy" onerror="this.parentElement.remove()"></div>` : `<div class="listing-preview-empty"></div>`}
       <div class="listing-main">
-        <a class="listing-title" href="${safeHref(smartLinkFor(l))}" target="_blank" rel="noopener noreferrer" data-track="${l.id}"><img class="fav" src="${l.logo || faviconFor(slug(l.url))}" alt="" onerror="this.style.visibility='hidden'">${escapeHtml(l.title)}</a>
+        <div class="listing-title-row">
+          <a class="listing-title" href="${safeHref(smartLinkFor(l))}" target="_blank" rel="noopener noreferrer" data-track="${l.id}"><img class="fav" src="${l.logo || faviconFor(slug(l.url))}" alt="" onerror="this.style.visibility='hidden'">${escapeHtml(l.title)}</a>
+          <span class="badge">${escapeHtml(l.category)}</span>
+        </div>
         <div class="listing-desc">${escapeHtml(l.desc || slug(l.url))}</div>
         <div class="listing-meta">
-          <span class="badge">${escapeHtml(l.category)}</span>
           <span>${timeAgo(l.claimedAt)}</span>
           ${l.clicks > 0 ? `<span class="meta-dot">•</span><span>${l.clicks.toLocaleString("en-US")} clicks</span>` : ""}
         </div>
