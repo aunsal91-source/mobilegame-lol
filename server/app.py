@@ -345,7 +345,8 @@ def get_state():
                     l["screenshots"] = []
 
             cur.execute("""
-                SELECT id, url, title, amount, claimed_at AS ts, logo
+                SELECT id, url, title, amount, claimed_at AS ts, logo,
+                       app_store_url AS "appStoreUrl", play_store_url AS "playStoreUrl"
                 FROM listings ORDER BY claimed_at DESC LIMIT 12;
             """)
             activity = [dict(r) for r in cur.fetchall()]

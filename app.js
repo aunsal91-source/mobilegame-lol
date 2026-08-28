@@ -399,7 +399,7 @@
       <div class="rank-num">#${rank}</div>
       ${l.preview ? `<div class="listing-preview"><img class="preview-thumb" src="${l.preview}" alt="" loading="lazy" onerror="this.parentElement.remove()"></div>` : `<div class="listing-preview-empty"></div>`}
       <div class="listing-main">
-        <a class="listing-title" href="${safeHref(l.url)}" target="_blank" rel="noopener noreferrer" data-track="${l.id}"><img class="fav" src="${l.logo || faviconFor(slug(l.url))}" alt="" onerror="this.style.visibility='hidden'">${escapeHtml(l.title)}</a>
+        <a class="listing-title" href="${safeHref(smartLinkFor(l))}" target="_blank" rel="noopener noreferrer" data-track="${l.id}"><img class="fav" src="${l.logo || faviconFor(slug(l.url))}" alt="" onerror="this.style.visibility='hidden'">${escapeHtml(l.title)}</a>
         <div class="listing-desc">${escapeHtml(l.desc || slug(l.url))}</div>
         <div class="listing-meta">
           <span class="badge">${escapeHtml(l.category)}</span>
@@ -524,7 +524,7 @@
     list.forEach((l, i) => {
       const card = document.createElement("a");
       card.className = "today-card";
-      card.href = safeHref(l.url);
+      card.href = safeHref(smartLinkFor(l));
       card.target = "_blank";
       card.rel = "noopener noreferrer";
       card.addEventListener("click", () => trackClick(l.id));
@@ -548,7 +548,7 @@
     items.forEach((a) => {
       const chip = document.createElement("a");
       chip.className = "activity-chip";
-      chip.href = safeHref(a.url);
+      chip.href = safeHref(smartLinkFor(a));
       chip.target = "_blank";
       chip.rel = "noopener noreferrer";
       chip.addEventListener("click", () => trackClick(a.id));
@@ -559,6 +559,20 @@
       `;
       row.appendChild(chip);
     });
+  }
+
+  function detectDevice() {
+    const ua = navigator.userAgent || "";
+    if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) return "ios";
+    if (/Android/i.test(ua)) return "android";
+    return "other";
+  }
+  const DEVICE = detectDevice();
+
+  function smartLinkFor(l) {
+    if (DEVICE === "ios" && l.appStoreUrl) return l.appStoreUrl;
+    if (DEVICE === "android" && l.playStoreUrl) return l.playStoreUrl;
+    return l.url;
   }
 
   function safeHref(url) {
