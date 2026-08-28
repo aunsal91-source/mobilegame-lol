@@ -159,8 +159,19 @@ a { color: inherit; text-decoration: none; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.bid-form-row { display: flex; gap: 8px; flex: 2 1 280px; min-width: 0; }
-.bid-form-row input { flex: 1 1 auto; min-width: 0; }
+.more-details { display: contents; }
+.more-toggle {
+  display: none;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 2px 0;
+  cursor: pointer;
+  font-family: inherit;
+}
 .bid-form button {
   flex: 0 0 auto;
   height: 44px;
@@ -175,6 +186,7 @@ a { color: inherit; text-decoration: none; }
   font-family: inherit;
 }
 .bid-form button:hover { filter: brightness(1.08); }
+.bid-form .submit-btn { flex-basis: 100%; }
 .form-msg { min-height: 18px; font-size: 13px; margin-top: 10px; }
 .form-msg.error { color: #d1453b; }
 .form-msg.success { color: var(--money); }
@@ -416,8 +428,9 @@ a { color: inherit; text-decoration: none; }
 }
 
 @media (max-width: 600px) {
-  .bid-form-row { flex-direction: column; flex-basis: 100%; }
-  .bid-form-row button { width: 100%; }
+  .more-toggle { display: block; }
+  .more-details { display: none; }
+  .more-details.open { display: contents; }
 
   .listing-card {
     grid-template-columns: 26px 44px 1fr;

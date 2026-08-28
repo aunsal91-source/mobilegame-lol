@@ -67,16 +67,17 @@
 
   <form id="bidForm" class="bid-form" novalidate>
     <input type="text" id="bidUrl" placeholder="Paste an App Store, Google Play, or website link" required autocomplete="off">
-    <input type="text" id="bidName" placeholder="Game name" required autocomplete="off" maxlength="60">
-    <select id="bidCategory" required>
-      <option value="" disabled selected>Choose a genre</option>
-    </select>
-    <input type="text" id="bidAppStore" placeholder="App Store link (optional)" autocomplete="off">
-    <input type="text" id="bidPlayStore" placeholder="Google Play link (optional)" autocomplete="off">
-    <div class="bid-form-row">
+    <button type="button" id="moreDetailsToggle" class="more-toggle" aria-expanded="false">More details ▾</button>
+    <div id="moreDetailsFields" class="more-details">
+      <input type="text" id="bidName" placeholder="Game name" required autocomplete="off" maxlength="60">
+      <select id="bidCategory" required>
+        <option value="" disabled selected>Choose a genre</option>
+      </select>
+      <input type="text" id="bidAppStore" placeholder="App Store link (optional)" autocomplete="off">
+      <input type="text" id="bidPlayStore" placeholder="Google Play link (optional)" autocomplete="off">
       <input type="text" id="bidDesc" placeholder="One-line pitch (optional)" maxlength="140">
-      <button type="submit">Secure #1 Spot</button>
     </div>
+    <button type="submit" class="submit-btn">Secure #1 Spot</button>
   </form>
   <div class="url-preview" id="urlPreview" hidden></div>
   <p class="form-msg" id="formMsg"></p>

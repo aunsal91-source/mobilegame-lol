@@ -766,6 +766,15 @@
     // auto-fetch logo/title/genre/preview as the URL is typed
     $("#bidUrl").addEventListener("input", (e) => schedulePreview(e.target.value));
 
+    // on mobile, the name/genre/store-link/pitch fields start collapsed —
+    // they're usually auto-filled from the URL above anyway
+    $("#moreDetailsToggle").addEventListener("click", () => {
+      const box = $("#moreDetailsFields");
+      const open = box.classList.toggle("open");
+      $("#moreDetailsToggle").textContent = open ? "Fewer details ▴" : "More details ▾";
+      $("#moreDetailsToggle").setAttribute("aria-expanded", String(open));
+    });
+
     // once the gamer types into one of these directly, stop auto-filling it
     ["#bidName", "#bidDesc", "#bidCategory", "#bidAppStore", "#bidPlayStore"].forEach((sel) => {
       $(sel).addEventListener("input", (e) => { e.target.dataset.userEdited = "1"; });
@@ -783,9 +792,15 @@
       const playStoreUrl = $("#bidPlayStore").value.trim();
       const msg = $("#formMsg");
 
-      if (!name) { msg.textContent = "Enter the game's name."; msg.className = "form-msg error"; return; }
       if (!rawUrl) { msg.textContent = "Enter a link."; msg.className = "form-msg error"; return; }
-      if (!category) { msg.textContent = "Choose a genre."; msg.className = "form-msg error"; return; }
+      if (!name || !category) {
+        $("#moreDetailsFields").classList.add("open");
+        $("#moreDetailsToggle").textContent = "Fewer details ▴";
+        $("#moreDetailsToggle").setAttribute("aria-expanded", "true");
+        msg.textContent = !name ? "Enter the game's name." : "Choose a genre.";
+        msg.className = "form-msg error";
+        return;
+      }
       if (!amount || amount < 5) { msg.textContent = "Minimum bid is $5."; msg.className = "form-msg error"; return; }
 
       const url = resolveUrl(rawUrl);
