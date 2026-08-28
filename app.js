@@ -597,7 +597,31 @@
   async function fetchPreview(rawValue) {
     const href = resolveUrl(rawValue);
     const host = slug(href);
-    const fallback = { forUrl: rawValue, title: host, desc: "", logo: faviconFor(host), preview: null };
+    const fallback = { forUrl: rawValue, title: host, desc: "", logo: faviconFor(host), preview: null, category: null, detectedStore: null };
+
+    if (backendAvailable) {
+      try {
+        const res = await fetch(`/api/resolve?url=${encodeURIComponent(href)}`);
+        if (res.ok) {
+          const d = await res.json();
+          fetchedMeta = {
+            forUrl: rawValue,
+            title: d.title || host,
+            desc: d.desc || "",
+            logo: d.logo || faviconFor(host),
+            preview: d.preview || null,
+            category: d.category || null,
+            detectedStore: d.detectedStore || null,
+          };
+          renderPreview(fetchedMeta);
+          applyAutoFill(fetchedMeta, href);
+          return;
+        }
+      } catch {
+        // fall through to the generic client-side preview below
+      }
+    }
+
     try {
       const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(href)}&palette=false`);
       const json = await res.json();
@@ -610,6 +634,8 @@
           desc: d.description || "",
           logo,
           preview: (d.image && d.image.url) || null,
+          category: null,
+          detectedStore: null,
         };
       } else {
         fetchedMeta = fallback;
@@ -618,6 +644,15 @@
       fetchedMeta = fallback;
     }
     renderPreview(fetchedMeta);
+    applyAutoFill(fetchedMeta, href);
+  }
+
+  function applyAutoFill(meta, href) {
+    if (meta.title && !$("#bidName").dataset.userEdited) $("#bidName").value = meta.title;
+    if (meta.desc && !$("#bidDesc").dataset.userEdited) $("#bidDesc").value = meta.desc;
+    if (meta.category && !$("#bidCategory").dataset.userEdited) $("#bidCategory").value = meta.category;
+    if (meta.detectedStore === "appStore" && !$("#bidAppStore").dataset.userEdited) $("#bidAppStore").value = href;
+    if (meta.detectedStore === "playStore" && !$("#bidPlayStore").dataset.userEdited) $("#bidPlayStore").value = href;
   }
 
   function renderPreview(meta) {
@@ -713,8 +748,13 @@
       sizeAmountInput(e.target);
     });
 
-    // auto-fetch logo/title/preview as the URL is typed
+    // auto-fetch logo/title/genre/preview as the URL is typed
     $("#bidUrl").addEventListener("input", (e) => schedulePreview(e.target.value));
+
+    // once the gamer types into one of these directly, stop auto-filling it
+    ["#bidName", "#bidDesc", "#bidCategory", "#bidAppStore", "#bidPlayStore"].forEach((sel) => {
+      $(sel).addEventListener("input", (e) => { e.target.dataset.userEdited = "1"; });
+    });
 
     // form
     $("#bidForm").addEventListener("submit", async (e) => {
@@ -763,7 +803,9 @@
       msg.textContent = `You posted a ${fmtMoney(amount)} bid! (demo mode — no backend running, so no real payment was taken)`;
       msg.className = "form-msg success";
       $("#bidForm").reset();
-      $("#bidAmount").dataset.userEdited = "";
+      ["#bidAmount", "#bidName", "#bidDesc", "#bidCategory", "#bidAppStore", "#bidPlayStore"].forEach((sel) => {
+        $(sel).dataset.userEdited = "";
+      });
       $("#bidCategory").value = "";
       $("#urlPreview").hidden = true;
       fetchedMeta = null;

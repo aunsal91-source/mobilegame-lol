@@ -59,6 +59,85 @@ def fetch_app_store_screenshots(app_store_url):
         return []
 
 
+APPLE_GENRE_MAP = {
+    "Action": "Action", "Adventure": "Adventure", "Arcade": "Arcade",
+    "Board": "Card & Casino", "Card": "Card & Casino", "Casino": "Card & Casino",
+    "Casual": "Casual", "Family": "Casual", "Puzzle": "Puzzle",
+    "Racing": "Racing", "Role Playing": "Role Playing", "Simulation": "Simulation",
+    "Sports": "Sports", "Strategy": "Strategy", "Trivia": "Puzzle", "Word": "Puzzle",
+    "Music": "Indie & Other", "Educational": "Indie & Other",
+}
+
+
+def resolve_app_store(url):
+    m = re.search(r"/id(\d+)", url)
+    if not m:
+        return None
+    try:
+        r = requests.get("https://itunes.apple.com/lookup", params={"id": m.group(1)}, timeout=5)
+        results = (r.json() or {}).get("results") or []
+        if not results:
+            return None
+        d = results[0]
+        category = None
+        for g in d.get("genres") or []:
+            if g in APPLE_GENRE_MAP:
+                category = APPLE_GENRE_MAP[g]
+                break
+        desc = (d.get("description") or "").split("\n")[0][:140]
+        shots = d.get("screenshotUrls") or []
+        icon = d.get("artworkUrl512") or d.get("artworkUrl100") or ""
+        return {
+            "title": d.get("trackName") or "",
+            "desc": desc,
+            "logo": icon,
+            "preview": (shots[0] if shots else icon) or None,
+            "category": category,
+            "detectedStore": "appStore",
+        }
+    except Exception:
+        return None
+
+
+def scrape_og_meta(url, detected_store):
+    try:
+        r = requests.get(url, timeout=5, headers={"User-Agent": "Mozilla/5.0"})
+        html = r.text[:200000]
+    except Exception:
+        return None
+
+    def og(prop):
+        m = re.search(rf'<meta[^>]+property=["\']og:{prop}["\'][^>]+content=["\']([^"\']+)["\']', html, re.I)
+        if not m:
+            m = re.search(rf'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:{prop}["\']', html, re.I)
+        return m.group(1) if m else None
+
+    title = og("title")
+    if not title:
+        m = re.search(r"<title[^>]*>([^<]+)</title>", html, re.I)
+        title = m.group(1).strip() if m else None
+    image = og("image")
+    return {
+        "title": title or "",
+        "desc": (og("description") or "")[:140],
+        "logo": image or favicon_for(slug(url)),
+        "preview": image,
+        "category": None,
+        "detectedStore": detected_store,
+    }
+
+
+def resolve_url_metadata(url):
+    if "apps.apple.com" in url or "itunes.apple.com" in url:
+        data = resolve_app_store(url)
+        if data:
+            return data
+        return scrape_og_meta(url, "appStore")
+    if "play.google.com" in url:
+        return scrape_og_meta(url, "playStore")
+    return scrape_og_meta(url, None)
+
+
 def slug(url):
     try:
         parsed = urllib.parse.urlparse(url if url.startswith("http") else "https://" + url)
@@ -505,6 +584,18 @@ def api_heartbeat():
     referrer = (body.get("referrer") or "").strip()
     record_heartbeat(session_id, user_agent, referrer)
     return jsonify({"onlineCount": get_online_count()})
+
+
+@app.get("/api/resolve")
+def api_resolve():
+    raw = (request.args.get("url") or "").strip()
+    if not raw:
+        return jsonify({"error": "missing url"}), 400
+    href = raw if raw.startswith("http") else "https://" + raw.lstrip("@")
+    data = resolve_url_metadata(href)
+    if not data:
+        return jsonify({"error": "couldn't resolve"}), 502
+    return jsonify(data)
 
 
 @app.post("/api/click/<listing_id>")

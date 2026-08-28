@@ -63,11 +63,11 @@
       <button type="button" id="stepUp" class="step-btn" aria-label="Increase bid by one dollar">+</button>
     </span>
   </h2>
-  <p class="hint">Posting less than the top bid still lands you on the board — wherever that amount ranks. New entries start at $5.</p>
+  <p class="hint">Paste an App Store or Google Play link and we'll fill in the name, genre and screenshots for you. Posting less than the top bid still lands you on the board — wherever that amount ranks. New entries start at $5.</p>
 
   <form id="bidForm" class="bid-form" novalidate>
+    <input type="text" id="bidUrl" placeholder="Paste an App Store, Google Play, or website link" required autocomplete="off">
     <input type="text" id="bidName" placeholder="Game name" required autocomplete="off" maxlength="60">
-    <input type="text" id="bidUrl" placeholder="Game link (App Store, Google Play, or website)" required autocomplete="off">
     <select id="bidCategory" required>
       <option value="" disabled selected>Choose a genre</option>
     </select>
