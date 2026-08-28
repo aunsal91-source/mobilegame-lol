@@ -463,7 +463,7 @@ def get_state():
             """)
             activity = [dict(r) for r in cur.fetchall()]
 
-            cur.execute("SELECT COALESCE(SUM(amount), 0) AS total FROM listings WHERE id NOT LIKE 'seed-%' AND NOT hidden;")
+            cur.execute("SELECT COALESCE(SUM(amount), 0) AS total FROM listings WHERE NOT hidden;")
             total_earned = cur.fetchone()["total"]
 
     daily_map = get_daily_clicks_map([l["id"] for l in listings])
