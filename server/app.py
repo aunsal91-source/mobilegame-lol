@@ -279,6 +279,7 @@ SEED_LISTINGS = [
     {"url": "https://dinopolo.club", "title": "Mini Metro", "desc": "making subway planning weirdly stressful.", "category": "Strategy", "amount": 5, "clicks": 29, "hoursAgo": 52, "appStoreUrl": "https://apps.apple.com/us/app/mini-metro/id837860959?uo=4"},
     {"url": "https://voodoo.io", "title": "Going Balls", "desc": "a rolling ball that judges your reflexes harshly.", "category": "Arcade", "amount": 5, "clicks": 56, "hoursAgo": 12, "appStoreUrl": "https://apps.apple.com/us/app/going-balls/id1499081620?uo=4"},
     {"url": "https://peoplefun.com", "title": "Wordscapes", "desc": "turning a coffee break into forty-five minutes.", "category": "Puzzle", "amount": 5, "clicks": 47, "hoursAgo": 38, "appStoreUrl": "https://apps.apple.com/us/app/wordscapes-word-game/id1207472156?uo=4"},
+    {"url": "https://www.paxiegames.com", "title": "Tile Star: Match Puzzle Game", "desc": "turning tile matching into a surprisingly glamorous fashion makeover binge.", "category": "Puzzle", "amount": 5, "clicks": 31, "hoursAgo": 4, "appStoreUrl": "https://apps.apple.com/us/app/tile-star-match-puzzle-game/id6447300192?uo=4"},
 ]
 
 
