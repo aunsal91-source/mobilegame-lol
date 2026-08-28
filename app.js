@@ -387,7 +387,7 @@
     li.className = "listing-card" + (rank <= 3 ? ` rank-${rank}` : "");
     li.innerHTML = `
       <div class="rank-num">#${rank}</div>
-      ${l.preview ? `<div class="listing-preview"><img class="preview-thumb" src="${l.preview}" alt="" loading="lazy" onerror="this.parentElement.remove()"></div>` : `<div class="listing-preview-empty"></div>`}
+      ${l.preview ? `<div class="listing-preview"><img class="preview-thumb" src="${l.preview}" alt="${escapeHtml(l.title)} icon" loading="lazy" onerror="this.parentElement.remove()"></div>` : `<div class="listing-preview-empty"></div>`}
       <div class="listing-main">
         <div class="listing-title-row">
           <a class="listing-title" href="${safeHref(smartLinkFor(l))}" target="_blank" rel="noopener noreferrer" data-track="${l.id}"><img class="fav" src="${l.logo || faviconFor(slug(l.url))}" alt="" onerror="this.style.visibility='hidden'">${escapeHtml(l.title)}</a>
@@ -403,7 +403,7 @@
         <span class="money">${fmtMoney(l.amount)}</span>
         <button type="button" data-claim="${l.id}">claim this spot for ${fmtMoney(l.amount + 1)}</button>
       </div>
-      ${rank === 1 && l.screenshots && l.screenshots.length ? `<div class="screenshot-strip">${l.screenshots.map((s) => `<img class="screenshot-thumb" src="${s}" alt="" loading="lazy" onerror="this.remove()">`).join("")}</div>` : ""}
+      ${rank === 1 && l.screenshots && l.screenshots.length ? `<div class="screenshot-strip">${l.screenshots.map((s, i) => `<img class="screenshot-thumb" src="${s}" alt="${escapeHtml(l.title)} screenshot ${i + 1}" loading="lazy" onerror="this.remove()">`).join("")}</div>` : ""}
     `;
     return li;
   }
