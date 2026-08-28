@@ -373,6 +373,7 @@
   function sparklineSvg(daily) {
     if (!daily || daily.length < 2) return "";
     const values = daily.map((d) => d.clicks);
+    if (!values.some((v) => v > 0)) return ""; // no activity yet — a flat line is just noise
     const max = Math.max(1, ...values);
     const w = 72, h = 24, step = w / (values.length - 1);
     const points = values.map((v, i) => `${(i * step).toFixed(1)},${(h - (v / max) * (h - 3) - 1.5).toFixed(1)}`).join(" ");
