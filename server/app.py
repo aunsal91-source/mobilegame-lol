@@ -154,6 +154,26 @@ def fetch_app_store_icon_by_name(title):
         return None
 
 
+def hide_test_listing_once():
+    """The manual 'Test Game' listing was deleted by hand, but Stripe still has
+    it on record as a paid session, so reconcile_stripe_payments() kept
+    resurrecting it. Re-insert it as hidden instead of gone: the row's id
+    still exists, so reconcile's ON CONFLICT DO NOTHING leaves it alone, and
+    the hidden flag keeps it out of every listing/activity query."""
+    try:
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO listings (id, url, title, description, category, amount, clicks, claimed_at, logo, hidden)
+                    VALUES ('cs_test_a11wXCLCpqwgXb9xOqlXCZiTAXULUbfEABk5t8b2TXiwUlGyqOEluT2DG5',
+                            'https://example.com', 'Test Game', '', 'Indie & Other', 5, 0, 0, '', true)
+                    ON CONFLICT (id) DO UPDATE SET hidden = true;
+                """)
+            conn.commit()
+    except Exception:
+        pass  # best-effort — never break startup over this
+
+
 def rescale_seed_clicks_once():
     """One-time correction: the original seed data used inflated click counts
     (thousands) for demo flavor; real seed listings should start more modest
@@ -284,6 +304,7 @@ def init_db():
             cur.execute("ALTER TABLE listings ADD COLUMN IF NOT EXISTS app_store_url TEXT NOT NULL DEFAULT '';")
             cur.execute("ALTER TABLE listings ADD COLUMN IF NOT EXISTS play_store_url TEXT NOT NULL DEFAULT '';")
             cur.execute("ALTER TABLE listings ADD COLUMN IF NOT EXISTS screenshots TEXT NOT NULL DEFAULT '[]';")
+            cur.execute("ALTER TABLE listings ADD COLUMN IF NOT EXISTS hidden BOOLEAN NOT NULL DEFAULT false;")
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS meta (
                     key TEXT PRIMARY KEY,
@@ -413,7 +434,7 @@ def get_state():
             cur.execute("""
                 SELECT id, url, title, description AS desc, category, amount, clicks, claimed_at AS "claimedAt",
                        logo, preview, app_store_url AS "appStoreUrl", play_store_url AS "playStoreUrl", screenshots
-                FROM listings ORDER BY amount DESC, claimed_at ASC LIMIT %s;
+                FROM listings WHERE NOT hidden ORDER BY amount DESC, claimed_at ASC LIMIT %s;
             """, (MAX_BOARD_SIZE,))
             listings = [dict(r) for r in cur.fetchall()]
             for l in listings:
@@ -425,11 +446,11 @@ def get_state():
             cur.execute("""
                 SELECT id, url, title, amount, claimed_at AS ts, logo,
                        app_store_url AS "appStoreUrl", play_store_url AS "playStoreUrl"
-                FROM listings ORDER BY claimed_at DESC LIMIT 12;
+                FROM listings WHERE NOT hidden ORDER BY claimed_at DESC LIMIT 12;
             """)
             activity = [dict(r) for r in cur.fetchall()]
 
-            cur.execute("SELECT COALESCE(SUM(amount), 0) AS total FROM listings WHERE id NOT LIKE 'seed-%';")
+            cur.execute("SELECT COALESCE(SUM(amount), 0) AS total FROM listings WHERE id NOT LIKE 'seed-%' AND NOT hidden;")
             total_earned = cur.fetchone()["total"]
 
     daily_map = get_daily_clicks_map([l["id"] for l in listings])
@@ -775,6 +796,7 @@ def static_files(path="index.html"):
 
 
 init_db()
+hide_test_listing_once()
 rescale_seed_clicks_once()
 backfill_seed_icons()
 
