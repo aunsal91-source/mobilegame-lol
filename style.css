@@ -311,11 +311,11 @@ a { color: inherit; text-decoration: none; }
 }
 .listing-side .money.unclaimed { color: var(--text-dim); font-weight: 700; font-size: 11px; letter-spacing: .04em; opacity: .7; }
 .listing-side button {
-  font-size: 11.5px; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border);
-  background: var(--bg); color: var(--text); cursor: pointer; white-space: nowrap;
-  font-family: inherit; font-weight: 600;
+  font-size: 11.5px; padding: 7px 14px; border-radius: 999px; border: none;
+  background: var(--accent); color: #fff; cursor: pointer; white-space: nowrap;
+  font-family: inherit; font-weight: 700;
 }
-.listing-side button:hover { border-color: var(--accent-2); color: var(--accent-2); }
+.listing-side button:hover { filter: brightness(1.08); }
 
 .pagination {
   display: flex; align-items: center; justify-content: center; gap: 4px;
