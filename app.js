@@ -380,17 +380,6 @@
     return `<svg class="sparkline" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${points}" fill="none" stroke="var(--live)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   }
 
-  function storeButtons(l) {
-    let html = "";
-    if (l.appStoreUrl) {
-      html += `<a class="store-btn" href="${safeHref(l.appStoreUrl)}" target="_blank" rel="noopener noreferrer" data-track="${l.id}">App Store</a>`;
-    }
-    if (l.playStoreUrl) {
-      html += `<a class="store-btn" href="${safeHref(l.playStoreUrl)}" target="_blank" rel="noopener noreferrer" data-track="${l.id}">Google Play</a>`;
-    }
-    return html;
-  }
-
   function listingCard(l, rank) {
     const li = document.createElement("li");
     li.className = "listing-card" + (rank <= 3 ? ` rank-${rank}` : "");
@@ -406,7 +395,6 @@
           <span>${timeAgo(l.claimedAt)}</span>
           ${l.clicks > 0 ? `<span class="meta-dot">•</span><span>${l.clicks.toLocaleString("en-US")} clicks</span>` : ""}
           ${sparklineSvg(l.dailyClicks)}
-          ${storeButtons(l)}
         </div>
       </div>
       <div class="listing-side">
