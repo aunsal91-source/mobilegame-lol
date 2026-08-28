@@ -154,6 +154,30 @@ def fetch_app_store_icon_by_name(title):
         return None
 
 
+def rescale_seed_clicks_once():
+    """One-time correction: the original seed data used inflated click counts
+    (thousands) for demo flavor; real seed listings should start more modest
+    (1-100) since click counts now grow for real via /api/click. Guarded by a
+    meta flag so it never re-runs and clobbers real accumulated clicks."""
+    try:
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1 FROM meta WHERE key = 'seed_clicks_rescaled';")
+                if cur.fetchone():
+                    return
+                for i, s in enumerate(SEED_LISTINGS):
+                    cur.execute(
+                        "UPDATE listings SET clicks = %s WHERE id = %s AND clicks > %s;",
+                        (s["clicks"], f"seed-{i}", s["clicks"]),
+                    )
+                cur.execute(
+                    "INSERT INTO meta (key, value) VALUES ('seed_clicks_rescaled', '1') ON CONFLICT (key) DO NOTHING;"
+                )
+            conn.commit()
+    except Exception:
+        pass  # best-effort — never break startup over this
+
+
 def backfill_seed_icons():
     """Seed listings are written by hand with just a favicon — give them real
     App Store icons/preview art too, the same quality a real submission gets.
@@ -202,27 +226,27 @@ def slug(url):
 
 
 SEED_LISTINGS = [
-    {"url": "https://subwaysurfers.com", "title": "Subway Surfers", "desc": "Charted for: turning every commute into a dodge-the-inspector sprint.", "category": "Arcade", "amount": 5, "clicks": 21830, "hoursAgo": 40},
-    {"url": "https://king.com", "title": "Candy Crush Saga", "desc": "Charted for: making one more level a permanent lie.", "category": "Puzzle", "amount": 5, "clicks": 19120, "hoursAgo": 60},
-    {"url": "https://clashroyale.com", "title": "Clash Royale", "desc": "Charted for: 3-minute matches that somehow eat 3 hours.", "category": "Strategy", "amount": 6, "clicks": 15310, "hoursAgo": 20},
-    {"url": "https://brawlstars.com", "title": "Brawl Stars", "desc": "Charted for: turning the group chat into a raid squad.", "category": "Action", "amount": 5, "clicks": 13230, "hoursAgo": 80},
-    {"url": "https://innersloth.com", "title": "Among Us", "desc": "Charted for: ruining friendships one emergency meeting at a time.", "category": "Casual", "amount": 5, "clicks": 12010, "hoursAgo": 30},
-    {"url": "https://genshin.hoyoverse.com", "title": "Genshin Impact", "desc": "Charted for: a battery-draining open world you can't put down.", "category": "Role Playing", "amount": 6, "clicks": 17110, "hoursAgo": 12},
-    {"url": "https://roblox.com", "title": "Roblox", "desc": "Charted for: being ten thousand different games in one app.", "category": "Simulation", "amount": 7, "clicks": 22870, "hoursAgo": 5},
-    {"url": "https://minecraft.net", "title": "Minecraft", "desc": "Charted for: still not letting go after all these years.", "category": "Adventure", "amount": 6, "clicks": 16590, "hoursAgo": 3},
-    {"url": "https://callofduty.com/mobile", "title": "Call of Duty: Mobile", "desc": "Charted for: console-grade firefights in your pocket.", "category": "Battle Royale", "amount": 5, "clicks": 14650, "hoursAgo": 11},
-    {"url": "https://pubgmobile.com", "title": "PUBG Mobile", "desc": "Charted for: making 100-player drop-ins feel routine.", "category": "Battle Royale", "amount": 5, "clicks": 12210, "hoursAgo": 22},
-    {"url": "https://stumbleguys.com", "title": "Stumble Guys", "desc": "Charted for: chaos physics that end every friendship gently.", "category": "Casual", "amount": 5, "clicks": 8740, "hoursAgo": 14},
-    {"url": "https://dreamgames.com", "title": "Royal Match", "desc": "Charted for: a talking king with an unreasonable renovation budget.", "category": "Puzzle", "amount": 6, "clicks": 13980, "hoursAgo": 10},
-    {"url": "https://scopely.com", "title": "Monopoly GO!", "desc": "Charted for: turning a board game into a slot machine, somehow.", "category": "Card & Casino", "amount": 5, "clicks": 18210, "hoursAgo": 26},
-    {"url": "https://moonactive.com", "title": "Coin Master", "desc": "Charted for: spinning a slot wheel to raid your friends' villages.", "category": "Card & Casino", "amount": 5, "clicks": 11020, "hoursAgo": 45},
-    {"url": "https://township.com", "title": "Township", "desc": "Charted for: farming, building, and mildly neglecting real life.", "category": "Simulation", "amount": 5, "clicks": 7480, "hoursAgo": 18},
-    {"url": "https://gameloft.com", "title": "Asphalt 9: Legends", "desc": "Charted for: physics-defying drifts that make traffic jams look tame.", "category": "Racing", "amount": 5, "clicks": 9340, "hoursAgo": 55},
-    {"url": "https://tocaboca.com", "title": "Toca Life World", "desc": "Charted for: letting kids run entire cities with zero rules.", "category": "Simulation", "amount": 5, "clicks": 8670, "hoursAgo": 33},
-    {"url": "https://robtopgames.com", "title": "Geometry Dash", "desc": "Charted for: one-tap deaths that somehow keep you smiling.", "category": "Arcade", "amount": 5, "clicks": 6980, "hoursAgo": 9},
-    {"url": "https://poncle.co", "title": "Vampire Survivors", "desc": "Charted for: a screen full of chaos and one very tired arm.", "category": "Indie & Other", "amount": 6, "clicks": 12510, "hoursAgo": 15},
-    {"url": "https://lilithgames.com", "title": "AFK Arena", "desc": "Charted for: getting stronger while you're not even playing.", "category": "Idle & Clicker", "amount": 5, "clicks": 8980, "hoursAgo": 7},
-    {"url": "https://miniclip.com", "title": "8 Ball Pool", "desc": "Charted for: trash-talking strangers over a very small table.", "category": "Sports", "amount": 5, "clicks": 7400, "hoursAgo": 50},
+    {"url": "https://subwaysurfers.com", "title": "Subway Surfers", "desc": "Charted for: turning every commute into a dodge-the-inspector sprint.", "category": "Arcade", "amount": 5, "clicks": 88, "hoursAgo": 40},
+    {"url": "https://king.com", "title": "Candy Crush Saga", "desc": "Charted for: making one more level a permanent lie.", "category": "Puzzle", "amount": 5, "clicks": 66, "hoursAgo": 60},
+    {"url": "https://clashroyale.com", "title": "Clash Royale", "desc": "Charted for: 3-minute matches that somehow eat 3 hours.", "category": "Strategy", "amount": 6, "clicks": 61, "hoursAgo": 20},
+    {"url": "https://brawlstars.com", "title": "Brawl Stars", "desc": "Charted for: turning the group chat into a raid squad.", "category": "Action", "amount": 5, "clicks": 54, "hoursAgo": 80},
+    {"url": "https://innersloth.com", "title": "Among Us", "desc": "Charted for: ruining friendships one emergency meeting at a time.", "category": "Casual", "amount": 5, "clicks": 47, "hoursAgo": 30},
+    {"url": "https://genshin.hoyoverse.com", "title": "Genshin Impact", "desc": "Charted for: a battery-draining open world you can't put down.", "category": "Role Playing", "amount": 6, "clicks": 78, "hoursAgo": 12},
+    {"url": "https://roblox.com", "title": "Roblox", "desc": "Charted for: being ten thousand different games in one app.", "category": "Simulation", "amount": 7, "clicks": 92, "hoursAgo": 5},
+    {"url": "https://minecraft.net", "title": "Minecraft", "desc": "Charted for: still not letting go after all these years.", "category": "Adventure", "amount": 6, "clicks": 85, "hoursAgo": 3},
+    {"url": "https://callofduty.com/mobile", "title": "Call of Duty: Mobile", "desc": "Charted for: console-grade firefights in your pocket.", "category": "Battle Royale", "amount": 5, "clicks": 39, "hoursAgo": 11},
+    {"url": "https://pubgmobile.com", "title": "PUBG Mobile", "desc": "Charted for: making 100-player drop-ins feel routine.", "category": "Battle Royale", "amount": 5, "clicks": 44, "hoursAgo": 22},
+    {"url": "https://stumbleguys.com", "title": "Stumble Guys", "desc": "Charted for: chaos physics that end every friendship gently.", "category": "Casual", "amount": 5, "clicks": 28, "hoursAgo": 14},
+    {"url": "https://dreamgames.com", "title": "Royal Match", "desc": "Charted for: a talking king with an unreasonable renovation budget.", "category": "Puzzle", "amount": 6, "clicks": 58, "hoursAgo": 10},
+    {"url": "https://scopely.com", "title": "Monopoly GO!", "desc": "Charted for: turning a board game into a slot machine, somehow.", "category": "Card & Casino", "amount": 5, "clicks": 71, "hoursAgo": 26},
+    {"url": "https://moonactive.com", "title": "Coin Master", "desc": "Charted for: spinning a slot wheel to raid your friends' villages.", "category": "Card & Casino", "amount": 5, "clicks": 33, "hoursAgo": 45},
+    {"url": "https://township.com", "title": "Township", "desc": "Charted for: farming, building, and mildly neglecting real life.", "category": "Simulation", "amount": 5, "clicks": 19, "hoursAgo": 18},
+    {"url": "https://gameloft.com", "title": "Asphalt 9: Legends", "desc": "Charted for: physics-defying drifts that make traffic jams look tame.", "category": "Racing", "amount": 5, "clicks": 24, "hoursAgo": 55},
+    {"url": "https://tocaboca.com", "title": "Toca Life World", "desc": "Charted for: letting kids run entire cities with zero rules.", "category": "Simulation", "amount": 5, "clicks": 22, "hoursAgo": 33},
+    {"url": "https://robtopgames.com", "title": "Geometry Dash", "desc": "Charted for: one-tap deaths that somehow keep you smiling.", "category": "Arcade", "amount": 5, "clicks": 15, "hoursAgo": 9},
+    {"url": "https://poncle.co", "title": "Vampire Survivors", "desc": "Charted for: a screen full of chaos and one very tired arm.", "category": "Indie & Other", "amount": 6, "clicks": 49, "hoursAgo": 15},
+    {"url": "https://lilithgames.com", "title": "AFK Arena", "desc": "Charted for: getting stronger while you're not even playing.", "category": "Idle & Clicker", "amount": 5, "clicks": 26, "hoursAgo": 7},
+    {"url": "https://miniclip.com", "title": "8 Ball Pool", "desc": "Charted for: trash-talking strangers over a very small table.", "category": "Sports", "amount": 5, "clicks": 18, "hoursAgo": 50},
 ]
 
 
@@ -751,6 +775,7 @@ def static_files(path="index.html"):
 
 
 init_db()
+rescale_seed_clicks_once()
 backfill_seed_icons()
 
 if __name__ == "__main__":
