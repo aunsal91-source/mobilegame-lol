@@ -415,11 +415,36 @@ a { color: inherit; text-decoration: none; }
   .main-nav { display: none; }
 }
 
+@media (max-width: 600px) {
+  .bid-form-row { flex-direction: column; flex-basis: 100%; }
+  .bid-form-row button { width: 100%; }
+
+  .listing-card {
+    grid-template-columns: 26px 44px 1fr;
+    grid-template-areas:
+      "rank preview main"
+      "side side side"
+      "shots shots shots";
+    row-gap: 10px;
+    column-gap: 10px;
+  }
+  .rank-num { grid-area: rank; }
+  .listing-preview, .listing-preview-empty { grid-area: preview; width: 44px; height: 44px; }
+  .listing-main { grid-area: main; }
+  .listing-side {
+    grid-area: side;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .listing-side .money { margin-right: 0; }
+  .listing-card.rank-1 .listing-side { padding-top: 0; }
+  .screenshot-strip { grid-area: shots; }
+}
+
 @media (max-width: 480px) {
   .hero-stats { font-size: 12.5px; padding: 7px 14px; }
   .claim-line { font-size: 1.7rem; }
   .inline-stepper { margin-left: 6px; gap: 6px; }
   .step-btn { width: 24px; height: 24px; font-size: 14px; }
-  .listing-card { grid-template-columns: 24px 44px 1fr auto; }
-  .listing-preview { width: 44px; height: 44px; }
 }
