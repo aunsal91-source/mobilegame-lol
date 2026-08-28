@@ -127,6 +127,53 @@ def scrape_og_meta(url, detected_store):
     }
 
 
+def fetch_app_store_icon_by_name(title):
+    """Best-effort lookup of an app's official icon + a screenshot by name, via
+    Apple's public iTunes Search API. Used to backfill the hand-written seed
+    listings, which don't have a real App Store link to resolve from."""
+    try:
+        r = requests.get(
+            "https://itunes.apple.com/search",
+            params={"term": title, "entity": "software", "limit": 1},
+            timeout=5,
+        )
+        results = (r.json() or {}).get("results") or []
+        if not results:
+            return None
+        d = results[0]
+        shots = d.get("screenshotUrls") or []
+        icon = d.get("artworkUrl512") or d.get("artworkUrl100") or ""
+        if not icon:
+            return None
+        return {"logo": icon, "preview": shots[0] if shots else icon}
+    except Exception:
+        return None
+
+
+def backfill_seed_icons():
+    """Seed listings are written by hand with just a favicon — give them real
+    App Store icons/preview art too, the same quality a real submission gets.
+    Runs once per row (skips anything already backfilled), safe to call on
+    every startup."""
+    try:
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT id, title FROM listings WHERE id LIKE 'seed-%' AND (preview IS NULL OR preview = '');")
+                rows = cur.fetchall()
+            for listing_id, title in rows:
+                data = fetch_app_store_icon_by_name(title)
+                if not data:
+                    continue
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "UPDATE listings SET logo = %s, preview = %s WHERE id = %s;",
+                        (data["logo"], data["preview"], listing_id),
+                    )
+                conn.commit()
+    except Exception:
+        pass  # best-effort — never break startup over this
+
+
 def resolve_url_metadata(url):
     if "apps.apple.com" in url or "itunes.apple.com" in url:
         data = resolve_app_store(url)
@@ -697,6 +744,7 @@ def static_files(path="index.html"):
 
 
 init_db()
+backfill_seed_icons()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=PORT, debug=DEBUG)
