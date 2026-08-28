@@ -543,6 +543,8 @@ def reconcile_stripe_payments():
             if s.payment_status != "paid":
                 continue
             meta = s.metadata.to_dict() if s.metadata else {}
+            if meta.get("site") != "mobilegame":
+                continue  # shared Stripe account — skip sessions from coffeebid.lol
             name = meta.get("name")
             url = meta.get("url")
             category = meta.get("category")
@@ -781,6 +783,7 @@ def api_checkout():
             "quantity": 1,
         }],
         metadata={
+            "site": "mobilegame",
             "name": name, "url": url, "category": category, "desc": desc,
             "appStoreUrl": app_store_url, "playStoreUrl": play_store_url, "preview": preview,
         },
@@ -804,6 +807,10 @@ def stripe_webhook():
         # (no .get()) — re-parse the verified raw payload instead.
         session = json.loads(payload)["data"]["object"]
         meta = session.get("metadata") or {}
+        if meta.get("site") != "mobilegame":
+            # this Stripe account is shared with coffeebid.lol — webhooks fire
+            # account-wide, so ignore anything that isn't our own checkout
+            return "", 200
         amount = (session.get("amount_total") or 0) // 100
         name = meta.get("name") or "Unknown"
         url = meta.get("url") or "#"
