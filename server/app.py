@@ -154,6 +154,21 @@ def fetch_app_store_icon_by_name(title):
         return None
 
 
+def promote_paxie_to_top():
+    """One-off: bump Tile Star (Paxie Games) to $13 so it leads the board.
+    Only raises the amount, never lowers it, so a later real bid on this
+    listing is never clobbered by a startup re-run."""
+    try:
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE listings SET amount = 13 WHERE title = 'Tile Star: Match Puzzle Game' AND amount < 13;"
+                )
+            conn.commit()
+    except Exception:
+        pass  # best-effort — never break startup over this
+
+
 def hide_test_listing_once():
     """The manual 'Test Game' listing was deleted by hand, but Stripe still has
     it on record as a paid session, so reconcile_stripe_payments() kept
@@ -200,25 +215,28 @@ def rescale_seed_clicks_once():
 
 def backfill_seed_icons():
     """Seed listings are written by hand with just a favicon — give them real
-    App Store icons/preview art too, the same quality a real submission gets.
-    Runs once per row (skips anything already backfilled), safe to call on
-    every startup."""
+    App Store icons/preview art AND a screenshot gallery too, the same
+    quality a real submission gets. Runs once per row (skips anything
+    already backfilled), safe to call on every startup."""
     try:
         with get_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    SELECT id, title FROM listings
-                    WHERE id LIKE 'seed-%' AND (preview IS NULL OR preview = '' OR app_store_url = '');
+                    SELECT id, title, app_store_url FROM listings
+                    WHERE id LIKE 'seed-%'
+                      AND (preview IS NULL OR preview = '' OR app_store_url = '' OR screenshots = '[]');
                 """)
                 rows = cur.fetchall()
-            for listing_id, title in rows:
+            for listing_id, title, app_store_url in rows:
                 data = fetch_app_store_icon_by_name(title)
                 if not data:
                     continue
+                app_store_url = data.get("appStoreUrl") or app_store_url or ""
+                screenshots = fetch_app_store_screenshots(app_store_url) if app_store_url else []
                 with conn.cursor() as cur:
                     cur.execute(
-                        "UPDATE listings SET logo = %s, preview = %s, app_store_url = %s WHERE id = %s;",
-                        (data["logo"], data["preview"], data.get("appStoreUrl", ""), listing_id),
+                        "UPDATE listings SET logo = %s, preview = %s, app_store_url = %s, screenshots = %s WHERE id = %s;",
+                        (data["logo"], data["preview"], app_store_url, json.dumps(screenshots), listing_id),
                     )
                 conn.commit()
     except Exception:
@@ -811,6 +829,7 @@ def static_files(path="index.html"):
 
 init_db()
 hide_test_listing_once()
+promote_paxie_to_top()
 rescale_seed_clicks_once()
 backfill_seed_icons()
 
