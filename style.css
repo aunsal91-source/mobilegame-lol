@@ -9,7 +9,7 @@
   --accent-dim: #e7e1ff;
   --live: #17a558;
   --money: #6c4cf5;
-  --price: #17a558;
+  --price: var(--text);
   --bg-rgb: 247,247,251;
   --radius: 8px;
   --shadow: 0 1px 2px rgba(0,0,0,0.08);
@@ -27,7 +27,7 @@
   --accent-dim: #2a2145;
   --live: #22e07a;
   --money: #8b6cff;
-  --price: #22e07a;
+  --price: var(--text);
   --bg-rgb: 15,14,23;
   --shadow: 0 1px 2px rgba(0,0,0,0.4);
 }
@@ -248,24 +248,23 @@ a { color: inherit; text-decoration: none; }
   border: 2px solid color-mix(in srgb, var(--accent) 20%, transparent);
 }
 .listing-card.rank-1::after {
-  content: "TOP RANKED";
+  content: "🏆";
   position: absolute;
-  top: 8px;
-  right: -34px;
-  transform: rotate(28deg);
-  background: transparent;
-  color: var(--accent);
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  line-height: 1;
+  background: var(--accent-dim);
   border: 2px solid var(--accent);
-  border-radius: 4px;
-  padding: 2px 30px;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: .06em;
-  opacity: .85;
+  border-radius: 50%;
   pointer-events: none;
-  white-space: nowrap;
 }
-.listing-card.rank-1 .listing-side { padding-top: 22px; }
+.listing-card.rank-1 .listing-side { padding-top: 44px; }
 .screenshot-strip {
   grid-column: 1 / -1;
   display: flex; gap: 2px; overflow-x: auto; margin-top: 4px; padding-top: 12px;
@@ -414,7 +413,6 @@ a { color: inherit; text-decoration: none; }
   .categories { order: 2; }
   .board { order: 1; }
   .main-nav { display: none; }
-  .listing-card.rank-1::after { right: -36px; top: 8px; }
 }
 
 @media (max-width: 480px) {
