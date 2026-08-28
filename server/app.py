@@ -145,7 +145,11 @@ def fetch_app_store_icon_by_name(title):
         icon = d.get("artworkUrl512") or d.get("artworkUrl100") or ""
         if not icon:
             return None
-        return {"logo": icon, "preview": shots[0] if shots else icon}
+        return {
+            "logo": icon,
+            "preview": shots[0] if shots else icon,
+            "appStoreUrl": d.get("trackViewUrl") or "",
+        }
     except Exception:
         return None
 
@@ -158,7 +162,10 @@ def backfill_seed_icons():
     try:
         with get_conn() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT id, title FROM listings WHERE id LIKE 'seed-%' AND (preview IS NULL OR preview = '');")
+                cur.execute("""
+                    SELECT id, title FROM listings
+                    WHERE id LIKE 'seed-%' AND (preview IS NULL OR preview = '' OR app_store_url = '');
+                """)
                 rows = cur.fetchall()
             for listing_id, title in rows:
                 data = fetch_app_store_icon_by_name(title)
@@ -166,8 +173,8 @@ def backfill_seed_icons():
                     continue
                 with conn.cursor() as cur:
                     cur.execute(
-                        "UPDATE listings SET logo = %s, preview = %s WHERE id = %s;",
-                        (data["logo"], data["preview"], listing_id),
+                        "UPDATE listings SET logo = %s, preview = %s, app_store_url = %s WHERE id = %s;",
+                        (data["logo"], data["preview"], data.get("appStoreUrl", ""), listing_id),
                     )
                 conn.commit()
     except Exception:
