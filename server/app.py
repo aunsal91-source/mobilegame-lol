@@ -1,6 +1,7 @@
 import io
 import json
 import os
+import re
 import time
 import urllib.parse
 from datetime import datetime, timedelta, timezone
@@ -37,6 +38,25 @@ MAX_BOARD_SIZE = 100
 
 def favicon_for(host):
     return f"https://www.google.com/s2/favicons?sz=64&domain={urllib.parse.quote(host)}"
+
+
+def fetch_app_store_screenshots(app_store_url):
+    """Pull official screenshot images for an App Store listing via Apple's public,
+    unauthenticated iTunes Lookup API. Returns [] if there's no App Store link, the
+    ID can't be parsed, or the lookup fails for any reason."""
+    if not app_store_url:
+        return []
+    m = re.search(r"/id(\d+)", app_store_url)
+    if not m:
+        return []
+    try:
+        r = requests.get("https://itunes.apple.com/lookup", params={"id": m.group(1)}, timeout=5)
+        results = (r.json() or {}).get("results") or []
+        if not results:
+            return []
+        return (results[0].get("screenshotUrls") or [])[:5]
+    except Exception:
+        return []
 
 
 def slug(url):
@@ -106,6 +126,7 @@ def init_db():
             cur.execute("ALTER TABLE listings ADD COLUMN IF NOT EXISTS preview TEXT;")
             cur.execute("ALTER TABLE listings ADD COLUMN IF NOT EXISTS app_store_url TEXT NOT NULL DEFAULT '';")
             cur.execute("ALTER TABLE listings ADD COLUMN IF NOT EXISTS play_store_url TEXT NOT NULL DEFAULT '';")
+            cur.execute("ALTER TABLE listings ADD COLUMN IF NOT EXISTS screenshots TEXT NOT NULL DEFAULT '[]';")
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS meta (
                     key TEXT PRIMARY KEY,
@@ -234,10 +255,15 @@ def get_state():
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             cur.execute("""
                 SELECT id, url, title, description AS desc, category, amount, clicks, claimed_at AS "claimedAt",
-                       logo, preview, app_store_url AS "appStoreUrl", play_store_url AS "playStoreUrl"
+                       logo, preview, app_store_url AS "appStoreUrl", play_store_url AS "playStoreUrl", screenshots
                 FROM listings ORDER BY amount DESC, claimed_at ASC LIMIT %s;
             """, (MAX_BOARD_SIZE,))
             listings = [dict(r) for r in cur.fetchall()]
+            for l in listings:
+                try:
+                    l["screenshots"] = json.loads(l["screenshots"]) if l["screenshots"] else []
+                except Exception:
+                    l["screenshots"] = []
 
             cur.execute("""
                 SELECT id, url, title, amount, claimed_at AS ts, logo
@@ -262,13 +288,14 @@ def get_state():
 
 def add_listing(listing_id, url, title, desc, category, amount, logo, preview="", app_store_url="", play_store_url=""):
     now_ms = int(time.time() * 1000)
+    screenshots = json.dumps(fetch_app_store_screenshots(app_store_url))
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                """INSERT INTO listings (id, url, title, description, category, amount, clicks, claimed_at, logo, preview, app_store_url, play_store_url)
-                   VALUES (%s,%s,%s,%s,%s,%s,0,%s,%s,%s,%s,%s)
+                """INSERT INTO listings (id, url, title, description, category, amount, clicks, claimed_at, logo, preview, app_store_url, play_store_url, screenshots)
+                   VALUES (%s,%s,%s,%s,%s,%s,0,%s,%s,%s,%s,%s,%s)
                    ON CONFLICT (id) DO NOTHING;""",
-                (listing_id, url, title, desc, category, amount, now_ms, logo, preview, app_store_url, play_store_url),
+                (listing_id, url, title, desc, category, amount, now_ms, logo, preview, app_store_url, play_store_url, screenshots),
             )
         conn.commit()
 

@@ -412,6 +412,7 @@
         <span class="money${isUnclaimed ? " unclaimed" : ""}">${isUnclaimed ? "UNCLAIMED" : fmtMoney(l.amount)}</span>
         <button type="button" data-claim="${l.id}">claim this spot for ${fmtMoney(isUnclaimed ? MIN_BID : l.amount + 1)}</button>
       </div>
+      ${rank === 1 && l.screenshots && l.screenshots.length ? `<div class="screenshot-strip">${l.screenshots.map((s) => `<img class="screenshot-thumb" src="${s}" alt="" loading="lazy" onerror="this.remove()">`).join("")}</div>` : ""}
     `;
     return li;
   }
