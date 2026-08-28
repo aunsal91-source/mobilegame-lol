@@ -1,0 +1,30 @@
+<svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .wordmark { font-family: ui-sans-serif, Arial, sans-serif; font-weight: 800; }
+      .subtext { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    </style>
+  </defs>
+
+  <!-- base badge -->
+  <circle cx="120" cy="120" r="100" fill="#1A1730" stroke="#8B6CFF" stroke-width="3"/>
+  <circle cx="120" cy="120" r="90" fill="none" stroke="#22E07A" stroke-width="1" opacity="0.25"/>
+
+  <!-- bottom accent arc -->
+  <path d="M172,210.1 A104,104 0 0 1 68,210.1" fill="none" stroke="#22E07A" stroke-width="9" stroke-linecap="round"/>
+
+  <!-- gamepad icon -->
+  <g>
+    <path d="M78,68 H162 A26,26 0 0 1 188,94 L194,132 A18,18 0 0 1 165,146 L150,128 H90 L75,146 A18,18 0 0 1 46,132 L52,94 A26,26 0 0 1 78,68 Z" fill="#F3F1FA"/>
+    <g stroke="#1A1730" stroke-width="6" stroke-linecap="round">
+      <path d="M84,92 v20"/>
+      <path d="M74,102 h20"/>
+    </g>
+    <circle cx="150" cy="94" r="6" fill="#8B6CFF"/>
+    <circle cx="168" cy="108" r="6" fill="#22E07A"/>
+  </g>
+
+  <!-- wordmark -->
+  <text x="120" y="171" text-anchor="middle" class="wordmark" font-size="22" letter-spacing="0.5" fill="#F3F1FA">MOBILEGAME</text>
+  <text x="120" y="190" text-anchor="middle" class="subtext" font-size="12" font-weight="700" letter-spacing="1.5" fill="#22E07A">TOP 100</text>
+</svg>

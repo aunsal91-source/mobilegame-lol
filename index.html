@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mobilegame.lol — Top 100 Mobile Games Leaderboard</title>
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-row">
+    <a href="/" class="logo" aria-label="mobilegame.lol">
+      <svg class="logo-mark" viewBox="0 0 100 70" fill="none" aria-hidden="true">
+        <path d="M22 20H78 A14,14 0 0 1 92,36 L96,52 A9,9 0 0 1 80.5,59 L72,49 H28 L19.5,59 A9,9 0 0 1 4,52 L8,36 A14,14 0 0 1 22,20 Z" fill="var(--bg)" stroke="var(--text)" stroke-width="6" stroke-linejoin="round"/>
+        <path d="M27 34v12M21 40h12" stroke="var(--text)" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="70" cy="34" r="4.5" fill="var(--accent)"/>
+        <circle cx="80" cy="42" r="4.5" fill="var(--live)"/>
+      </svg>
+      <span>mobilegame<span class="logo-dot">.</span>lol</span>
+    </a>
+    <div class="tabs" id="rankTabs" role="tablist">
+      <button class="tab active" data-tab="all" role="tab" aria-selected="true">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2"/><path d="M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2"/><path d="M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3"/><path d="M4 22h16"/><path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/><path d="M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3"/></svg>
+        All-time
+      </button>
+      <button class="tab" data-tab="today" role="tab" aria-selected="false">
+        <span class="ping-dot" aria-hidden="true"><span class="ping-dot-ring"></span><span class="ping-dot-core"></span></span>
+        Today
+      </button>
+    </div>
+    <nav class="main-nav">
+      <a href="#board">Top 100</a>
+      <a href="#categories">Genres</a>
+      <a href="#about">About</a>
+    </nav>
+    <button class="theme-toggle" id="themeToggle" title="Switch theme" type="button">🌙</button>
+  </div>
+</header>
+
+<section class="hero wrap" id="bidWidget">
+  <h1 class="sr-only">mobilegame.lol — Top 100 Mobile Games Leaderboard</h1>
+  <p class="hero-stats">
+    <span class="stat-group">
+      <span class="dot-online" aria-hidden="true"></span>
+      <strong id="onlineCount">--</strong> gamers online
+    </span>
+    <span class="dot">·</span>
+    <span class="stat-group"><strong id="visitorCount">--</strong> visits logged</span>
+    <span class="dot">·</span>
+    <span class="stat-group"><span class="money" id="totalEarned">$0</span> paid in bids</span>
+  </p>
+
+  <h2 class="claim-line">
+    <span id="claimLabel">Get your game to #1 for</span>
+    <span class="inline-stepper">
+      <button type="button" id="stepDown" class="step-btn" aria-label="Decrease bid by one dollar">−</button>
+      <span class="claim-amount-wrap"><span class="currency">$</span><input type="text" id="bidAmount" inputmode="numeric" value="5" class="claim-amount" aria-label="Bid amount in dollars"></span>
+      <button type="button" id="stepUp" class="step-btn" aria-label="Increase bid by one dollar">+</button>
+    </span>
+  </h2>
+  <p class="hint">Posting less than the top bid still lands you on the board — wherever that amount ranks. New entries start at $5.</p>
+
+  <form id="bidForm" class="bid-form" novalidate>
+    <input type="text" id="bidName" placeholder="Game name" required autocomplete="off" maxlength="60">
+    <input type="text" id="bidUrl" placeholder="Game link (App Store, Google Play, or website)" required autocomplete="off">
+    <select id="bidCategory" required>
+      <option value="" disabled selected>Choose a genre</option>
+    </select>
+    <input type="text" id="bidAppStore" placeholder="App Store link (optional)" autocomplete="off">
+    <input type="text" id="bidPlayStore" placeholder="Google Play link (optional)" autocomplete="off">
+    <div class="bid-form-row">
+      <input type="text" id="bidDesc" placeholder="One-line pitch (optional)" maxlength="140">
+      <button type="submit">Secure #1 Spot</button>
+    </div>
+  </form>
+  <div class="url-preview" id="urlPreview" hidden></div>
+  <p class="form-msg" id="formMsg"></p>
+</section>
+
+<div class="wrap layout">
+  <aside class="categories" id="categories">
+    <h3>Genres</h3>
+    <ul id="categoryList"></ul>
+  </aside>
+
+  <main class="board" id="board">
+    <div class="filter-status" id="filterStatus" hidden></div>
+    <ol class="listing-list" id="listingListTop"></ol>
+
+    <section class="today-section" id="todaySection">
+      <div class="section-head">
+        <h3>Today's Top Games</h3>
+      </div>
+      <div class="today-row" id="todayTop"></div>
+    </section>
+
+    <section class="activity-section" id="activitySection">
+      <h3>Latest Bids</h3>
+      <div class="activity-row" id="activityList"></div>
+    </section>
+
+    <ol class="listing-list" id="listingListRest"></ol>
+    <nav class="pagination" id="boardPagination" aria-label="Board pages" hidden>
+      <button type="button" class="page-btn page-arrow" id="pagePrev" aria-label="Previous page">‹</button>
+      <div class="page-numbers" id="pageNumbers"></div>
+      <button type="button" class="page-btn page-arrow" id="pageNext" aria-label="Next page">›</button>
+    </nav>
+    <p class="page-summary" id="pageSummary"></p>
+  </main>
+</div>
+
+<section class="about wrap" id="about">
+  <h1 class="about-heading">About</h1>
+  <p class="about-lead">mobilegame.lol started as <span class="accent">a simple side project</span>: no ads, no API keys, no revenue sharing. Just outbid the competition to rank #1 — that's it.</p>
+
+  <h4 class="about-sub">Then it went live</h4>
+  <p class="about-launch">The board went live on <strong id="aboutLaunchDate">--</strong>.</p>
+
+  <p class="about-sub-label">A few numbers since then:</p>
+  <div class="about-stats">
+    <div class="about-stat">
+      <div class="about-stat-value"><span class="dot-online" aria-hidden="true"></span><span id="aboutVisitors">--</span></div>
+      <div class="about-stat-label">visitors</div>
+    </div>
+    <div class="about-stat">
+      <div class="about-stat-value money" id="aboutRevenue">$0</div>
+      <div class="about-stat-label">paid in bids</div>
+    </div>
+    <div class="about-stat">
+      <div class="about-stat-value money" id="aboutHighest">$0</div>
+      <div class="about-stat-label" id="aboutHighestLabel">highest bid so far</div>
+    </div>
+  </div>
+
+  <p>mobilegame.lol is a pay-to-rank leaderboard for mobile games and indie studios. Whoever posts the biggest bid sits at #1 as the Top Ranked game on the site — outbid them and you take their spot, pushing them down the board.</p>
+  <p>Payments are processed securely by Stripe — mobilegame.lol never sees or stores your card details. No game or studio listed here is affiliated with or has endorsed this site.</p>
+</section>
+
+<section class="about wrap" id="rules">
+  <h3>Rules</h3>
+  <p>Whoever has posted the biggest bid for a genre sits at #1 for that genre. Ties are broken by whoever paid first.</p>
+  <ul>
+    <li>Bids start at $5. There's no maximum.</li>
+    <li>Every bid is its own entry — to reclaim #1 after someone outbids you, post a new, higher bid.</li>
+    <li>Only the top 100 bids by amount are shown on the board — fall below #100 and your listing rotates off until you post a higher bid.</li>
+    <li>Rankings update automatically as soon as a payment is confirmed.</li>
+    <li>Only list a game or app you have the right to list — we may remove listings that are fake, abusive, illegal, or clearly not a genuine game or app, without a refund.</li>
+  </ul>
+</section>
+
+<section class="about wrap" id="terms">
+  <h3>Terms</h3>
+  <p>By posting a bid on mobilegame.lol you agree to these terms. mobilegame.lol is a pay-to-rank leaderboard, not a directory, review site, or advertising guarantee — a top ranking reflects the highest bid paid, not any endorsement by us.</p>
+  <ul>
+    <li><strong>Payments are final.</strong> Bids are non-refundable once processed, including if you're later outbid.</li>
+    <li>We don't guarantee any amount of traffic, clicks, installs, or business results from a listing.</li>
+    <li>We may edit, remove, or decline any listing at our discretion, and may change or discontinue the service at any time.</li>
+    <li>Don't use the service for anything illegal, fraudulent, or abusive.</li>
+    <li>The service is provided "as is" without warranties; to the extent permitted by law, mobilegame.lol isn't liable for indirect or consequential losses arising from your use of it.</li>
+    <li>These terms are governed by the law of England and Wales.</li>
+  </ul>
+</section>
+
+<section class="about wrap" id="privacy">
+  <h3>Privacy</h3>
+  <p>We keep this simple.</p>
+  <ul>
+    <li><strong>What we store:</strong> the game name, link, genre, description and bid amount you submit — these are public and shown on the board.</li>
+    <li><strong>Payments:</strong> handled entirely by Stripe. We never see or store your card details.</li>
+    <li><strong>Your browser:</strong> we store a light/dark theme preference locally on your device.</li>
+    <li><strong>Visit analytics:</strong> we log a random session ID, your browser type, and the page that referred you, so we can count real visits and gauge traffic sources. We don't log or store your IP address.</li>
+    <li><strong>Third parties:</strong> Stripe (payments), Google's favicon service (site icons), and our hosting/database provider (Render).</li>
+    <li>Questions or requests about your data: <a href="mailto:hello@mobilegame.lol">hello@mobilegame.lol</a>.</li>
+  </ul>
+</section>
+
+<footer class="site-footer wrap">
+  <div>© 2026 mobilegame.lol · not affiliated with any game or studio listed</div>
+  <nav>
+    <a href="#rules">Rules</a>
+    <a href="#terms">Terms</a>
+    <a href="#privacy">Privacy</a>
+  </nav>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

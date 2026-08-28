@@ -1,0 +1,4 @@
+server/.env
+server/__pycache__/
+server/data.json
+server/flask.log
