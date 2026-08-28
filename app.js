@@ -255,7 +255,6 @@
     const totals = {};
     for (const c of GENRES) totals[c] = 0;
     for (const l of state.listings) {
-      if (l.id.startsWith("seed-")) continue; // unclaimed listings haven't actually been paid for — count as $0
       totals[l.category] = (totals[l.category] || 0) + l.amount;
     }
     return totals;
