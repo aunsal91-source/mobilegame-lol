@@ -706,8 +706,31 @@
     $("#bidUrl").focus();
   }
 
+  function launchConfetti() {
+    if (sessionStorage.getItem("mobilegame_confetti_shown")) return;
+    sessionStorage.setItem("mobilegame_confetti_shown", "1");
+    const layer = $("#confettiLayer");
+    const colors = ["#8b6cff", "#22e07a", "#ffd166", "#ff6b8b", "#6cc2ff"];
+    const count = 90;
+    for (let i = 0; i < count; i++) {
+      const piece = document.createElement("div");
+      piece.className = "confetti-piece";
+      const size = 6 + Math.random() * 6;
+      piece.style.left = Math.random() * 100 + "vw";
+      piece.style.width = size + "px";
+      piece.style.height = size * 1.6 + "px";
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.animationDuration = 2.4 + Math.random() * 1.8 + "s";
+      piece.style.animationDelay = Math.random() * 0.6 + "s";
+      layer.appendChild(piece);
+    }
+    setTimeout(() => { layer.innerHTML = ""; }, 5000);
+  }
+
   // ---- wire up ----
   function init() {
+    launchConfetti();
+
     // theme
     const savedTheme = localStorage.getItem("mobilegame_theme") || "light";
     document.documentElement.dataset.theme = savedTheme;
