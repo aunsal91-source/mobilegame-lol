@@ -290,7 +290,7 @@ a { color: inherit; text-decoration: none; }
 .preview-thumb { width: 100%; height: 100%; object-fit: cover; display: block; }
 .listing-main { min-width: 0; }
 .listing-title-row { display: flex; align-items: center; gap: 8px; min-width: 0; margin-bottom: 2px; }
-.listing-title { font-weight: 700; font-size: 16px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 auto; min-width: 0; }
+.listing-title { font-weight: 700; font-size: 16px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 0 1 auto; min-width: 0; }
 .listing-title-row .badge { flex: 0 0 auto; }
 .listing-desc {
   color: var(--text-dim); font-size: 14px; line-height: 1.4; overflow-wrap: break-word;
