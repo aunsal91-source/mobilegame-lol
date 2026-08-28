@@ -297,8 +297,8 @@
 
   function renderBidWidget() {
     $("#claimLabel").innerHTML = activeCategory
-      ? `Get your game to <span class="claim-highlight">#1</span> in ${escapeHtml(activeCategory)} for`
-      : `Get your game to <span class="claim-highlight">#1</span> for`;
+      ? `Get your <span class="claim-highlight">Mobile Game</span> to <span class="claim-highlight">#1</span> in ${escapeHtml(activeCategory)} for`
+      : `Get your <span class="claim-highlight">Mobile Game</span> to <span class="claim-highlight">#1</span> for`;
     const top = currentTopAmount();
     const amountEl = $("#bidAmount");
     if (!amountEl.dataset.userEdited) {
