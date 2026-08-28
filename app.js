@@ -202,7 +202,7 @@
 
   // ---- derived views ----
   function effectiveAmount(l) {
-    return l.id.startsWith("seed-") ? 0 : l.amount;
+    return l.amount;
   }
 
   function tzOffsetMinutes(timeZone, date) {
@@ -373,7 +373,6 @@
   function listingCard(l, rank) {
     const li = document.createElement("li");
     li.className = "listing-card" + (rank <= 3 ? ` rank-${rank}` : "");
-    const isUnclaimed = l.id.startsWith("seed-");
     li.innerHTML = `
       <div class="rank-num">#${rank}</div>
       ${l.preview ? `<div class="listing-preview"><img class="preview-thumb" src="${l.preview}" alt="" loading="lazy" onerror="this.parentElement.remove()"></div>` : `<div class="listing-preview-empty"></div>`}
@@ -389,8 +388,8 @@
         </div>
       </div>
       <div class="listing-side">
-        <span class="money${isUnclaimed ? " unclaimed" : ""}">${isUnclaimed ? "UNCLAIMED" : fmtMoney(l.amount)}</span>
-        <button type="button" data-claim="${l.id}">claim this spot for ${fmtMoney(isUnclaimed ? MIN_BID : l.amount + 1)}</button>
+        <span class="money">${fmtMoney(l.amount)}</span>
+        <button type="button" data-claim="${l.id}">claim this spot for ${fmtMoney(l.amount + 1)}</button>
       </div>
       ${rank === 1 && l.screenshots && l.screenshots.length ? `<div class="screenshot-strip">${l.screenshots.map((s) => `<img class="screenshot-thumb" src="${s}" alt="" loading="lazy" onerror="this.remove()">`).join("")}</div>` : ""}
     `;
@@ -514,7 +513,7 @@
           <span class="today-title">${escapeHtml(l.title)}</span>
         </div>
         <div class="today-desc">${escapeHtml(l.desc || slug(l.url))}</div>
-        <div class="today-amt money${l.id.startsWith("seed-") ? " unclaimed" : ""}">${l.id.startsWith("seed-") ? "UNCLAIMED" : fmtMoney(l.amount)}</div>
+        <div class="today-amt money">${fmtMoney(l.amount)}</div>
       `;
       row.appendChild(card);
     });
