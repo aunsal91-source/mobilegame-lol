@@ -668,7 +668,7 @@
   // ---- wire up ----
   function init() {
     // theme
-    const savedTheme = localStorage.getItem("mobilegame_theme") || "dark";
+    const savedTheme = localStorage.getItem("mobilegame_theme") || "light";
     document.documentElement.dataset.theme = savedTheme;
     $("#themeToggle").textContent = savedTheme === "dark" ? "☀️" : "🌙";
     $("#themeToggle").addEventListener("click", () => {
