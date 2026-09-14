@@ -1,3 +1,6 @@
+import base64
+import hashlib
+import hmac
 import io
 import json
 import os
@@ -23,6 +26,15 @@ STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 PORT = int(os.environ.get("PORT", "5183"))
 DEBUG = os.environ.get("FLASK_DEBUG", "0") == "1"
+
+# --- Fine Art Print (SENT store) x Prodigi fulfilment automation ---
+# Unrelated to the mobilegame.lol product itself; bolted onto this service
+# purely to reuse an already-working Flask + Render + auto-deploy setup
+# instead of standing up a separate host for a low-traffic webhook.
+PRODIGI_API_KEY = os.environ.get("PRODIGI_API_KEY", "")
+SENT_SHOPIFY_DOMAIN = os.environ.get("SENT_SHOPIFY_DOMAIN", "")
+SENT_SHOPIFY_CLIENT_ID = os.environ.get("SENT_SHOPIFY_CLIENT_ID", "")
+SENT_SHOPIFY_CLIENT_SECRET = os.environ.get("SENT_SHOPIFY_CLIENT_SECRET", "")
 
 stripe.api_key = STRIPE_SECRET_KEY
 
@@ -822,6 +834,150 @@ def stripe_webhook():
             session.get("id"), url, name, desc, category, amount, logo,
             meta.get("preview") or "", meta.get("appStoreUrl") or "", meta.get("playStoreUrl") or "",
         )
+
+    return "", 200
+
+
+_sent_shopify_token_cache = {"token": None, "expires_at": 0}
+
+
+def get_sent_shopify_token():
+    """Client-credentials token for the SENT Shopify store, cached in memory
+    for this worker process (mirrors shopify_client.py's on-disk cache, but
+    Render's filesystem isn't guaranteed to persist across deploys/restarts)."""
+    if _sent_shopify_token_cache["token"] and _sent_shopify_token_cache["expires_at"] > time.time() + 60:
+        return _sent_shopify_token_cache["token"]
+    resp = requests.post(
+        f"https://{SENT_SHOPIFY_DOMAIN}/admin/oauth/access_token",
+        json={
+            "client_id": SENT_SHOPIFY_CLIENT_ID,
+            "client_secret": SENT_SHOPIFY_CLIENT_SECRET,
+            "grant_type": "client_credentials",
+        },
+        timeout=10,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    _sent_shopify_token_cache["token"] = data["access_token"]
+    _sent_shopify_token_cache["expires_at"] = time.time() + data["expires_in"]
+    return _sent_shopify_token_cache["token"]
+
+
+def sent_shopify_graphql(query, variables=None):
+    resp = requests.post(
+        f"https://{SENT_SHOPIFY_DOMAIN}/admin/api/2024-10/graphql.json",
+        headers={"X-Shopify-Access-Token": get_sent_shopify_token()},
+        json={"query": query, "variables": variables or {}},
+        timeout=10,
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+
+def prodigi_attributes_for_sku(sku):
+    """Map our own variant SKU to the Prodigi order attributes + print area
+    it needs. Must stay in sync with wall-art-prodigi/prodigi_catalog.py."""
+    if sku.startswith("GLOBAL-FAP-"):
+        return {}, "default"
+    if sku.startswith("GLOBAL-CFP-"):
+        return {"color": "black"}, "default"
+    if sku.startswith("GLOBAL-CAN-"):
+        return {"wrap": "ImageWrap"}, "default"
+    if sku.startswith("GLOBAL-TEE-BC-3001-"):
+        # our SKU shape: GLOBAL-TEE-BC-3001-<color-no-spaces>-<SIZE>, e.g.
+        # GLOBAL-TEE-BC-3001-navyblue-M
+        rest = sku[len("GLOBAL-TEE-BC-3001-"):]
+        color, _, size = rest.rpartition("-")
+        color_map = {"black": "black", "white": "white", "navyblue": "navy blue"}
+        return {"color": color_map.get(color, color), "size": size.lower()}, "front"
+    return None, None
+
+
+def get_product_image_url(product_gid):
+    resp = sent_shopify_graphql(
+        """
+        query($id: ID!) {
+          product(id: $id) { featuredImage { url } }
+        }
+        """,
+        {"id": product_gid},
+    )
+    return (((resp.get("data") or {}).get("product") or {}).get("featuredImage") or {}).get("url")
+
+
+def create_prodigi_order(recipient, items, merchant_reference, idempotency_key):
+    payload = {
+        "merchantReference": merchant_reference,
+        "shippingMethod": "Standard",
+        "recipient": recipient,
+        "items": items,
+        "idempotencyKey": idempotency_key,
+    }
+    resp = requests.post(
+        "https://api.prodigi.com/v4.0/Orders",
+        headers={"X-API-Key": PRODIGI_API_KEY, "Content-Type": "application/json"},
+        json=payload,
+        timeout=30,
+    )
+    return resp
+
+
+@app.post("/webhooks/sent-fine-art-orders")
+def sent_fine_art_order_webhook():
+    """Shopify orders/paid webhook for the SENT / Fine Art Print store.
+    For each line item, resolves the Prodigi SKU + artwork image and places
+    a matching order with Prodigi so fulfilment is fully automatic."""
+    digest = hmac.new(
+        SENT_SHOPIFY_CLIENT_SECRET.encode("utf-8"), request.data, hashlib.sha256
+    ).digest()
+    expected = base64.b64encode(digest).decode("utf-8")
+    provided = request.headers.get("X-Shopify-Hmac-Sha256", "")
+    if not hmac.compare_digest(expected, provided):
+        return "", 401
+
+    order = json.loads(request.data)
+    order_name = order.get("name", str(order.get("id")))
+    shipping = order.get("shipping_address") or {}
+    recipient = {
+        "name": f"{shipping.get('first_name', '')} {shipping.get('last_name', '')}".strip(),
+        "address": {
+            "line1": shipping.get("address1", ""),
+            "line2": shipping.get("address2", "") or "",
+            "postalOrZipCode": shipping.get("zip", ""),
+            "countryCode": shipping.get("country_code", ""),
+            "townOrCity": shipping.get("city", ""),
+            "stateOrCounty": shipping.get("province_code", "") or "",
+        },
+    }
+
+    for line_item in order.get("line_items", []):
+        sku = line_item.get("sku") or ""
+        attributes, print_area = prodigi_attributes_for_sku(sku)
+        if attributes is None:
+            print(f"[sent-fulfil] order {order_name}: unrecognised SKU {sku!r}, skipping")
+            continue
+
+        product_gid = f"gid://shopify/Product/{line_item.get('product_id')}"
+        image_url = get_product_image_url(product_gid)
+        if not image_url:
+            print(f"[sent-fulfil] order {order_name}: no image for product {product_gid}, skipping")
+            continue
+
+        items = [{
+            "sku": sku,
+            "copies": line_item.get("quantity", 1),
+            "attributes": attributes,
+            "assets": [{"printArea": print_area, "url": image_url}],
+        }]
+        idempotency_key = f"{order.get('id')}-{line_item.get('id')}"
+        try:
+            resp = create_prodigi_order(recipient, items, order_name, idempotency_key)
+            if resp.status_code >= 300:
+                print(f"[sent-fulfil] order {order_name} line {line_item.get('id')} FAILED: {resp.status_code} {resp.text[:500]}")
+            else:
+                print(f"[sent-fulfil] order {order_name} line {line_item.get('id')} -> Prodigi OK")
+        except Exception as exc:
+            print(f"[sent-fulfil] order {order_name} line {line_item.get('id')} EXCEPTION: {exc}")
 
     return "", 200
 
