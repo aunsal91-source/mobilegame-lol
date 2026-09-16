@@ -938,16 +938,18 @@ def sent_fine_art_order_webhook():
     order = json.loads(request.data)
     order_name = order.get("name", str(order.get("id")))
     shipping = order.get("shipping_address") or {}
+    address = {
+        "line1": shipping.get("address1", ""),
+        "postalOrZipCode": shipping.get("zip", ""),
+        "countryCode": shipping.get("country_code", ""),
+        "townOrCity": shipping.get("city", ""),
+        "stateOrCounty": shipping.get("province_code", "") or "",
+    }
+    if shipping.get("address2"):
+        address["line2"] = shipping["address2"]
     recipient = {
         "name": f"{shipping.get('first_name', '')} {shipping.get('last_name', '')}".strip(),
-        "address": {
-            "line1": shipping.get("address1", ""),
-            "line2": shipping.get("address2", "") or "",
-            "postalOrZipCode": shipping.get("zip", ""),
-            "countryCode": shipping.get("country_code", ""),
-            "townOrCity": shipping.get("city", ""),
-            "stateOrCounty": shipping.get("province_code", "") or "",
-        },
+        "address": address,
     }
 
     for line_item in order.get("line_items", []):
@@ -966,6 +968,7 @@ def sent_fine_art_order_webhook():
         items = [{
             "sku": sku,
             "copies": line_item.get("quantity", 1),
+            "sizing": "fillPrintArea",
             "attributes": attributes,
             "assets": [{"printArea": print_area, "url": image_url}],
         }]
