@@ -889,6 +889,8 @@ def prodigi_attributes_for_sku(sku):
         return {}, "default", sku
     if sku.startswith("GLOBAL-CFP-") and colour:
         return {"color": colour}, "default", base
+    if sku.startswith("GLOBAL-BFP-") and colour:      # Prodigi budget framed poster ("Standard" frame): natural / white only
+        return {"color": colour}, "default", base
     if sku.startswith("GLOBAL-FRA-CAN-") and colour:
         return {"color": colour, "wrap": "ImageWrap"}, "default", base
     if sku.startswith("GLOBAL-CAN-"):
