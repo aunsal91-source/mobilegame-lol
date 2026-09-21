@@ -907,12 +907,18 @@ def get_product_image_url(product_gid):
     resp = sent_shopify_graphql(
         """
         query($id: ID!) {
-          product(id: $id) { featuredImage { url } }
+          product(id: $id) {
+            featuredImage { url }
+            printAsset: metafield(namespace: "sent", key: "print_asset_url") { value }
+          }
         }
         """,
         {"id": product_gid},
     )
-    return (((resp.get("data") or {}).get("product") or {}).get("featuredImage") or {}).get("url")
+    product = (resp.get("data") or {}).get("product") or {}
+    # Prefer the dedicated print-asset metafield: the featured image may be a storefront
+    # card/mockup rather than the artwork itself.
+    return (product.get("printAsset") or {}).get("value") or (product.get("featuredImage") or {}).get("url")
 
 
 def create_prodigi_order(recipient, items, merchant_reference, idempotency_key):
