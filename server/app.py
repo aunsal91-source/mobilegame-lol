@@ -874,23 +874,33 @@ def sent_shopify_graphql(query, variables=None):
     return resp.json()
 
 
+SENT_FRAME_COLOURS = {"NATURAL": "natural", "BLACK": "black", "BROWN": "brown", "WHITE": "white"}
+
+
 def prodigi_attributes_for_sku(sku):
-    """Map our own variant SKU to the Prodigi order attributes + print area
-    it needs. Must stay in sync with wall-art-prodigi/prodigi_catalog.py."""
+    """Map our own variant SKU to (Prodigi attributes, print area, real Prodigi SKU).
+    Frame colour rides on a suffix: GLOBAL-CFP-A4-NATURAL, GLOBAL-FRA-CAN-A4-BLACK, ...
+    Must stay in sync with wall-art-prodigi/catalog_v2.py."""
+    base, _, tail = sku.rpartition("-")
+    colour = SENT_FRAME_COLOURS.get(tail)
+    if colour is None:
+        base = sku
     if sku.startswith("GLOBAL-FAP-"):
-        return {}, "default"
-    if sku.startswith("GLOBAL-CFP-"):
-        return {"color": "black"}, "default"
+        return {}, "default", sku
+    if sku.startswith("GLOBAL-CFP-") and colour:
+        return {"color": colour}, "default", base
+    if sku.startswith("GLOBAL-FRA-CAN-") and colour:
+        return {"color": colour, "wrap": "ImageWrap"}, "default", base
     if sku.startswith("GLOBAL-CAN-"):
-        return {"wrap": "ImageWrap"}, "default"
+        return {"wrap": "ImageWrap"}, "default", sku
     if sku.startswith("GLOBAL-TEE-BC-3001-"):
         # our SKU shape: GLOBAL-TEE-BC-3001-<color-no-spaces>-<SIZE>, e.g.
         # GLOBAL-TEE-BC-3001-navyblue-M
         rest = sku[len("GLOBAL-TEE-BC-3001-"):]
         color, _, size = rest.rpartition("-")
         color_map = {"black": "black", "white": "white", "navyblue": "navy blue"}
-        return {"color": color_map.get(color, color), "size": size.lower()}, "front"
-    return None, None
+        return {"color": color_map.get(color, color), "size": size.lower()}, "front", sku
+    return None, None, None
 
 
 def get_product_image_url(product_gid):
@@ -954,7 +964,7 @@ def sent_fine_art_order_webhook():
 
     for line_item in order.get("line_items", []):
         sku = line_item.get("sku") or ""
-        attributes, print_area = prodigi_attributes_for_sku(sku)
+        attributes, print_area, prodigi_sku = prodigi_attributes_for_sku(sku)
         if attributes is None:
             print(f"[sent-fulfil] order {order_name}: unrecognised SKU {sku!r}, skipping")
             continue
@@ -966,7 +976,7 @@ def sent_fine_art_order_webhook():
             continue
 
         items = [{
-            "sku": sku,
+            "sku": prodigi_sku,
             "copies": line_item.get("quantity", 1),
             "sizing": "fillPrintArea",
             "attributes": attributes,
