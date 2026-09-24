@@ -905,13 +905,23 @@ def prodigi_attributes_for_sku(sku):
     return None, None, None
 
 
-def get_product_image_url(product_gid):
+SENT_BORDER_METAFIELDS = {
+    "white": "print_asset_url_bordered",   # original key, kept for back-compat
+    "cream": "print_asset_url_bordered_cream",
+    "black": "print_asset_url_bordered_black",
+}
+
+
+def get_product_image_url(product_gid, border_color=None):
     resp = sent_shopify_graphql(
         """
         query($id: ID!) {
           product(id: $id) {
             featuredImage { url }
             printAsset: metafield(namespace: "sent", key: "print_asset_url") { value }
+            borderWhite: metafield(namespace: "sent", key: "print_asset_url_bordered") { value }
+            borderCream: metafield(namespace: "sent", key: "print_asset_url_bordered_cream") { value }
+            borderBlack: metafield(namespace: "sent", key: "print_asset_url_bordered_black") { value }
           }
         }
         """,
@@ -919,8 +929,34 @@ def get_product_image_url(product_gid):
     )
     product = (resp.get("data") or {}).get("product") or {}
     # Prefer the dedicated print-asset metafield: the featured image may be a storefront
-    # card/mockup rather than the artwork itself.
+    # card/mockup rather than the artwork itself. If the shopper picked a gallery border colour
+    # at checkout, use the matching pre-bordered print file when one exists for this product;
+    # products whose bordered files haven't been generated yet fall back to the plain print
+    # asset, so an order can never silently ship with no image at all.
+    if border_color == "white":
+        bordered = (product.get("borderWhite") or {}).get("value")
+        if bordered:
+            return bordered
+    elif border_color == "cream":
+        bordered = (product.get("borderCream") or {}).get("value")
+        if bordered:
+            return bordered
+    elif border_color == "black":
+        bordered = (product.get("borderBlack") or {}).get("value")
+        if bordered:
+            return bordered
     return (product.get("printAsset") or {}).get("value") or (product.get("featuredImage") or {}).get("url")
+
+
+def line_item_border_color(line_item):
+    """Reads the 'Gallery Border' cart property the storefront swatch picker sets (value is
+    'White' / 'Cream' / 'Black', or the property is absent if no border was chosen)."""
+    for prop in line_item.get("properties") or []:
+        name = (prop.get("name") or "").strip().lower()
+        if name == "gallery border":
+            value = (prop.get("value") or "").strip().lower()
+            return value if value in SENT_BORDER_METAFIELDS else None
+    return None
 
 
 def create_prodigi_order(recipient, items, merchant_reference, idempotency_key):
@@ -978,7 +1014,7 @@ def sent_fine_art_order_webhook():
             continue
 
         product_gid = f"gid://shopify/Product/{line_item.get('product_id')}"
-        image_url = get_product_image_url(product_gid)
+        image_url = get_product_image_url(product_gid, border_color=line_item_border_color(line_item))
         if not image_url:
             print(f"[sent-fulfil] order {order_name}: no image for product {product_gid}, skipping")
             continue
